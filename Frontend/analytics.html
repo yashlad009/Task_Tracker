@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics | APMS PRO</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('apms-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <script src="app-config.js"></script>
+    <script src="theme.js" defer></script>
+    <style>
+        /* Interactive Tab Styling */
+        .analytics-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--sky-blue), var(--purple));
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 210, 255, 0.3);
+        }
+
+        .chart-container {
+            display: flex; 
+            align-items: flex-end; 
+            justify-content: space-around; 
+            height: 350px; 
+            padding: 40px 30px 20px 30px; 
+            background: var(--glass-panel-strong); 
+            border-radius: 20px; 
+            border: 1px solid var(--glass-border);
+            margin-top: 10px;
+        }
+        
+        .bar-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .bar-value {
+            color: var(--text-main);
+            font-weight: 800;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: 0.8s;
+        }
+
+        .viz-bar {
+            width: 75px; 
+            height: 5px; 
+            border-radius: 10px 10px 0 0; 
+            transition: all 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+
+        #bar1 { box-shadow: 0 0 20px rgba(157, 80, 187, 0.5); }
+        #bar2 { box-shadow: 0 0 20px rgba(39, 174, 96, 0.5); }
+        #bar3 { box-shadow: 0 0 20px rgba(0, 210, 255, 0.5); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="apms3.png" alt="APMS PRO Logo" style="height: 90px; margin-right: 10px; vertical-align: middle;">
+                Task<span>Tracker</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="tasks.html">Daily Planning</a></li>
+                <li><a href="important.html">Imp Tasks</a></li>
+                <li><a href="milestone.html">Milestones</a></li>
+                <li><a href="analytics.html" class="active">Analytics</a></li>
+                <li><a href="roles.html">Team</a></li>
+                <li><a href="mentor.html">AI Mentor</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="content-header">
+            <h1>Performance Analytics</h1>
+            <br>
+            <p>Visual data tracking for your tasks and milestones.</p>
+            <br>
+        </header>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-chart-line"></i></div>
+                <div><span class="label">Efficiency</span><br><span id="taskRate" class="value">0%</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon sky"><i class="fas fa-tasks"></i></div>
+                <div><span class="label">Pending</span><br><span id="pendingCount" class="value">0</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green" style="background: #27ae60;"><i class="fas fa-trophy" style="color:white"></i></div>
+                <div><span class="label">Milestones</span><br><span id="totalMilestones" class="value">0</span></div>
+            </div>
+        </div>
+
+        <div class="analytics-tabs">
+            <button class="tab-btn active" id="tabTasks" onclick="switchView('tasks')">
+                <i class="fas fa-list-check"></i> Task Analysis
+            </button>
+            <button class="tab-btn" id="tabMilestones" onclick="switchView('milestones')">
+                <i class="fas fa-flag-checkered"></i> Milestone Analysis
+            </button>
+        </div>
+
+        <div class="panel">
+            <h3 id="vizTitle">Task Productivity</h3>
+            <p id="vizDesc" style="margin-bottom: 20px;">Comparison of total vs completed tasks.</p>
+            
+            <div class="chart-container">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span id="val1" class="bar-value">0</span>
+                    <div id="bar1" class="viz-bar" style="background: var(--purple);"></div>
+                    <span class="bar-label" id="label1">Total Tasks</span>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span id="val2" class="bar-value">0</span>
+                    <div id="bar2" class="viz-bar" style="background: #27ae60;"></div>
+                    <span class="bar-label" id="label2">Completed</span>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span id="val3" class="bar-value" style="color: var(--sky-blue);">0%</span>
+                    <div id="bar3" class="viz-bar" style="background: var(--sky-blue);"></div>
+                    <span class="bar-label" id="label3">Efficiency %</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span>Contact:</span>
+                <a class="footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+            </div>
+            <div class="footer-socials">
+                <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            <div class="footer-rights">All rights are reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = window.getApiBaseUrl();
+        let cachedStats = null;
+        let cachedMilestones = [];
+
+        window.onload = function() {
+            // --- SYNCED SESSION KEY ---
+            const userData = localStorage.getItem('user_session'); 
+            if (!userData) {
+                window.location.href = "login.html";
+                return;
+            }
+            
+            const user = JSON.parse(userData);
+            const userId = user.id || user._id; // Bulletproof ID mapping
+            loadData(userId);
+        };
+
+        async function loadData(userId) {
+            try {
+                const [statsRes, milesRes] = await Promise.all([
+                    fetch(`${API_URL}/analytics/user/${userId}`),
+                    fetch(`${API_URL}/milestones/user/${userId}`)
+                ]);
+                
+                cachedStats = await statsRes.json();
+                cachedMilestones = await milesRes.json();
+
+                document.getElementById('taskRate').innerText = (cachedStats.efficiency || 0) + "%";
+                document.getElementById('pendingCount').innerText = cachedStats.pending || 0;
+                document.getElementById('totalMilestones').innerText = cachedMilestones.length;
+
+                switchView('tasks');
+            } catch (err) { 
+                console.error("Data fetch failed", err); 
+            }
+        }
+
+        function switchView(mode) {
+            const tTab = document.getElementById('tabTasks');
+            const mTab = document.getElementById('tabMilestones');
+            const title = document.getElementById('vizTitle');
+            const desc = document.getElementById('vizDesc');
+
+            if (mode === 'tasks') {
+                tTab.classList.add('active');
+                mTab.classList.remove('active');
+                title.innerText = "Task Productivity";
+                desc.innerText = "Real-time tracking of task volume vs completion.";
+                
+                updateVisuals(cachedStats.total || 0, cachedStats.completed || 0, cachedStats.efficiency || 0, "Tasks");
+            } else {
+                mTab.classList.add('active');
+                tTab.classList.remove('active');
+                title.innerText = "Milestone Achievements";
+                desc.innerText = "Comparing total milestones created vs fully finished goals.";
+                
+                const finished = cachedMilestones.filter(m => m.progress === 100).length;
+                const avgProgress = cachedMilestones.length > 0 
+                    ? (cachedMilestones.reduce((acc, m) => acc + (m.progress || 0), 0) / cachedMilestones.length) 
+                    : 0;
+                
+                updateVisuals(cachedMilestones.length, finished, Math.round(avgProgress), "Milestones");
+            }
+        }
+
+        function updateVisuals(v1, v2, v3, labelType) {
+            document.getElementById('val1').innerText = v1;
+            document.getElementById('val2').innerText = v2;
+            document.getElementById('val3').innerText = v3 + "%";
+
+            document.getElementById('label1').innerText = `Total ${labelType}`;
+            document.getElementById('label2').innerText = `Completed`;
+            document.getElementById('label3').innerText = labelType === "Tasks" ? "Efficiency %" : "Avg Progress %";
+
+            const b1 = document.getElementById('bar1');
+            const b2 = document.getElementById('bar2');
+            const b3 = document.getElementById('bar3');
+
+            // Scaling logic for bars
+            const h1 = Math.min(v1 * 10, 250); // Scale total count
+            const h2 = Math.min(v2 * 10, 250); // Scale completed count
+            const h3 = (v3 / 100) * 250;      // Efficiency is always % of 250px
+
+            b1.style.height = (v1 > 0 ? h1 : 5) + "px";
+            b2.style.height = (v2 > 0 ? h2 : 5) + "px";
+            b3.style.height = (v3 > 0 ? h3 : 5) + "px";
+
+            b1.style.background = (labelType === "Tasks") ? "var(--purple)" : "#f1c40f"; 
+        }
+
+        function logoutUser() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>

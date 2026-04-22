@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | APMS PRO</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('apms-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <script src="app-config.js"></script>
+    <script src="theme.js" defer></script>
+    <style>
+        .btn-sm { padding: 8px 14px; border-radius: 12px; cursor: pointer; color: white; font-weight: 700; }
+        .user-avatar { cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .user-avatar:hover { border-color: var(--sky-blue); }
+        .hero-banner {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 24px;
+            align-items: stretch;
+            margin-bottom: 30px;
+        }
+        .hero-panel {
+            position: relative;
+            overflow: hidden;
+            min-height: 240px;
+        }
+        .hero-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(83, 230, 255, 0.18), transparent 32%),
+                        radial-gradient(circle at bottom left, rgba(255, 115, 198, 0.16), transparent 30%);
+            pointer-events: none;
+        }
+        .hero-copy {
+            position: relative;
+            z-index: 1;
+            max-width: 560px;
+        }
+        .hero-copy p {
+            max-width: 48ch;
+            line-height: 1.7;
+        }
+        .quote-marquee {
+            margin-top: 8px;
+            padding: 14px 18px;
+            border-radius: 18px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.06);
+            color: var(--text-dim);
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .quote-marquee marquee {
+            display: block;
+        }
+        .hero-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+        .hero-chip {
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.08);
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .hero-spotlight {
+            display: grid;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .mini-card {
+            padding: 18px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .mini-card strong {
+            display: block;
+            font-size: 28px;
+            margin-top: 8px;
+        }
+        .token-value {
+            font-size: 36px;
+            color: var(--sky-blue);
+            text-shadow: 0 0 20px var(--neon-glow);
+        }
+        .sidebar-stack {
+            display: grid;
+            gap: 24px;
+        }
+        .rewards-panel {
+            display: grid;
+            gap: 18px;
+        }
+        .rewards-topline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+        .reward-pill {
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--glass-border);
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .reward-progress {
+            display: grid;
+            gap: 10px;
+        }
+        .reward-progress .progress-bar {
+            height: 14px;
+        }
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .achievement-card {
+            padding: 14px;
+            border-radius: 18px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.06);
+        }
+        .achievement-card.locked {
+            opacity: 0.58;
+            filter: grayscale(0.2);
+        }
+        .achievement-card strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 16px;
+        }
+        .token-legend {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .token-legend-item {
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .certificate-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            background: rgba(0, 0, 0, 0.58);
+            backdrop-filter: blur(6px);
+            padding: 20px;
+        }
+        .certificate-card {
+            max-width: 640px;
+            margin: 5vh auto 0;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: var(--glass-panel-strong);
+        }
+        .certificate-frame {
+            padding: 32px;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+        }
+        .certificate-frame h2 {
+            margin-bottom: 8px;
+        }
+        .certificate-frame .certificate-name {
+            font-size: 30px;
+            margin: 16px 0 6px;
+        }
+        .certificate-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Dashboard Category Badge */
+        .dashboard-cat-badge {
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: inline-block;
+            letter-spacing: 0.5px;
+            vertical-align: middle;
+        }
+        .dashboard-shell {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .hero-banner,
+            .dashboard-shell {
+                grid-template-columns: 1fr;
+            }
+            .achievement-grid,
+            .token-legend {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="apms3.png" alt="APMS PRO Logo" style="height: 90px; margin-right: 10px; vertical-align: middle;">
+                Task<span>Tracker</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Dashboard</a></li>
+                <li><a href="tasks.html">Daily Planning</a></li>
+                 <li><a href="important.html">Imp Tasks</a></li>
+                <li><a href="milestone.html">Milestones</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="roles.html">Team</a></li>
+                <li><a href="mentor.html">AI Mentor</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle theme" aria-pressed="false">
+                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
+                </button>
+                <div id="nav-initials" class="user-avatar" onclick="toggleProfile()" 
+                     style="background:linear-gradient(135deg, #9d50bb, #6e48aa); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; width:40px; height:40px; border-radius:50%;">U</div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="profileModal" class="modal" style="display:none; position: fixed; z-index: 1000; right: 20px; top: 70px;">
+        <div class="modal-content panel" style="width: 250px; background: var(--glass-panel-strong); border: 1px solid var(--glass-border);">
+            <div style="text-align: center;">
+                <div id="user-initials-large" style="width:60px; height:60px; background:var(--purple); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 10px auto; font-weight:bold;">US</div>
+                <p id="display-email" style="font-weight:bold; margin-bottom:5px; font-size: 14px; overflow: hidden; text-overflow: ellipsis;">User Email</p>
+                <p id="display-role" style="color:var(--sky-blue); font-size:11px; text-transform: uppercase; letter-spacing: 1px;">Standard User</p>
+                <hr style="margin: 15px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button class="btn-sm" onclick="logoutUser()" style="background:#ff7675; width:100%;">Logout Session</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <section class="hero-banner">
+            <div class="panel hero-panel">
+                <div class="hero-copy">
+                    <header class="content-header">
+                        <h1>Executive Overview</h1>
+                        <div class="quote-marquee">
+                            <marquee behavior="scroll" direction="left" scrollamount="4">
+                                "Small progress still rewrites the future." • "Discipline is choosing what matters most." • "A calm plan beats a rushed start." • "Consistency turns effort into identity." • "Finish the day stronger than you began."
+                            </marquee>
+                        </div>
+                    </header>
+                    <div class="hero-chips">
+                        <span class="hero-chip">Focus Beats Rush</span>
+                        <span class="hero-chip">Build With Calm</span>
+                        <span class="hero-chip">Finish With Intent</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-spotlight">
+                <div class="mini-card">
+                    <span style="color:var(--text-dim); font-size:12px; text-transform:uppercase; letter-spacing:0.14em;">Token Balance</span>
+                    <strong id="rewardTokenCount" class="token-value">0</strong>
+                    <small style="color:var(--text-dim);">Each completed task adds to your reward path. Stay steady and stack wins.</small>
+                </div>
+                <div class="mini-card">
+                    <span style="color:var(--text-dim); font-size:12px; text-transform:uppercase; letter-spacing:0.14em;">Current Level</span>
+                    <strong id="rewardLevelLabel">Level 1</strong>
+                    <small id="rewardNextLabel" style="color:var(--text-dim);">Next reward will appear here once your dashboard loads.</small>
+                </div>
+            </div>
+        </section>
+
+        <div class="dashboard-shell">
+            <div class="panel">
+                <h3>Active Tasks</h3>
+                <table class="task-table" style="width:100%; border-collapse: collapse; margin-top: 15px;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom: 1px solid var(--line-soft); color: var(--sky-blue); font-size: 12px;">
+                            <th style="padding:10px;">Description</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashboard-task-list">
+                        <tr><td colspan="3" style="text-align:center; padding:30px; color:var(--text-soft);">Syncing with cloud...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="sidebar-stack">
+                <div class="panel rewards-panel" style="margin-top: 0;">
+                    <div class="rewards-topline">
+                        <div>
+                            <h3>Rewards Panel</h3>
+                            <p style="color:var(--text-dim); font-size:13px; margin-top:6px;">Track tokens, next certificate, and achievement unlocks.</p>
+                        </div>
+                        <div class="reward-pill" id="rewardNextBadge">Next: Bronze</div>
+                    </div>
+
+                    <div class="reward-progress">
+                        <div class="progress-meta">
+                            <span id="rewardProgressLabel">0 / 100</span>
+                            <span id="rewardPercentLabel">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="rewardProgressFill" class="fill" style="width:0%;"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="margin-bottom:12px;">Achievements</h4>
+                        <div id="achievementGrid" class="achievement-grid"></div>
+                    </div>
+
+                    <div>
+                        <h4 style="margin-bottom:12px;">Token Engine</h4>
+                        <div id="tokenLegend" class="token-legend"></div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 0;">
+                    <h3>Milestone Tracking</h3>
+                    <div id="dashboard-milestones" style="margin-top: 15px;">
+                        <p style="font-size:13px; color:var(--text-soft);">Fetching milestones...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="certificateModal" class="certificate-modal">
+        <div class="panel certificate-card">
+            <div class="certificate-frame">
+                <p style="text-transform:uppercase; letter-spacing:0.16em; color:var(--text-dim); font-size:12px;">Achievement Certificate</p>
+                <h2 id="certificateTitle">Bronze Certificate</h2>
+                <p style="color:var(--text-dim); margin-top:8px;">Awarded for consistent progress and focused execution.</p>
+                <div class="certificate-name" id="certificateName">task_tracker_351</div>
+                <p id="certificateAchievement" style="font-size:18px; font-weight:700;"></p>
+                <p id="certificateDate" style="color:var(--text-dim); margin-top:12px;"></p>
+                <div class="certificate-actions">
+                    <button class="btn-primary" type="button" onclick="downloadCertificate()">Download Certificate</button>
+                    <button class="btn-sm" type="button" onclick="closeCertificate()" style="background:rgba(255,255,255,0.12); color:var(--text-main);">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span>Contact:</span>
+                <a class="footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+            </div>
+            <div class="footer-socials">
+                <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            <div class="footer-rights">All rights are reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = window.getApiBaseUrl();
+        let currentCertificate = null;
+
+        const categoryColors = {
+            'Study': '#9d50bb', 
+            'Health': '#27ae60', 
+            'Entertainment': '#ff7675', 
+            'Work': '#00d2ff', 
+            'Personal': '#ffb547'
+        };
+
+        window.onload = function() {
+            // --- SYNCED KEY: Looking for 'user_session' to match login.html ---
+            const userData = localStorage.getItem('user_session'); 
+            
+            if (!userData) {
+                console.warn("Session missing. Redirecting to login...");
+                window.location.href = "login.html";
+                return;
+            }
+
+            try {
+                const user = JSON.parse(userData);
+                setupUserProfile(user);
+                // Handle both MongoDB 'id' and '_id' formats
+                const uid = user.id || user._id; 
+                loadDashboardTasks(uid);
+                loadDashboardMilestones(uid);
+                loadRewards(uid);
+            } catch (e) {
+                console.error("Session corrupted. Clearing data.");
+                localStorage.clear();
+                window.location.href = "login.html";
+            }
+
+            window.onclick = function(event) {
+                if (!event.target.closest('.nav-actions') && !event.target.closest('#profileModal')) {
+                    document.getElementById('profileModal').style.display = 'none';
+                }
+            }
+        };
+
+        function setupUserProfile(user) {
+            const initial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
+            document.getElementById("nav-initials").innerText = initial;
+            document.getElementById("user-initials-large").innerText = initial;
+            document.getElementById("display-email").innerText = user.email || "Unknown User";
+            document.getElementById("display-role").innerText = user.role || "Standard User";
+            document.getElementById("certificateName").innerText = user.email || "task_tracker_351";
+        }
+
+        async function loadDashboardTasks(userId) {
+            const tableBody = document.getElementById('dashboard-task-list');
+            try {
+                const response = await fetch(`${API_URL}/tasks/user/${userId}`);
+                const tasks = await response.json();
+
+                if (!tasks || tasks.length === 0) {
+                    tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding: 20px; color: gray;'>No active tasks. Check 'Daily Planning'.</td></tr>";
+                    return;
+                }
+
+                tableBody.innerHTML = tasks.reverse().map(t => {
+                    const taskText = t.text || t.description || "Unnamed Task";
+                    const isDone = t.status && t.status.toLowerCase() === 'completed';
+                    const catName = t.category || 'Personal';
+                    const catColor = categoryColors[catName] || '#777';
+
+                    return `
+                        <tr style="border-bottom: 1px solid var(--line-soft);">
+                            <td style="padding:15px; color: var(--text-main); ${isDone ? 'text-decoration: line-through; opacity: 0.4;' : ''}">
+                                <span class="dashboard-cat-badge" style="background:${catColor};">
+                                    ${catName}
+                                </span>
+                                ${taskText}
+                            </td>
+                            <td>
+                                <span style="color:${isDone ? '#27ae60' : '#ffb547'}; font-weight:bold; font-size:11px; text-transform:uppercase;">
+                                    ${t.status || 'PENDING'}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    ${!isDone ? 
+                                        `<button class="btn-sm" onclick="completeTask('${t.id}')" style="background:#27ae60;"><i class="fas fa-check"></i></button>` : ''
+                                    }
+                                    <button class="btn-sm" onclick="deleteTask('${t.id}')" style="background:rgba(255, 118, 117, 0.2); color:#ff7675;"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>`;
+                }).join('');
+            } catch (err) {
+                tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:#ff7675;'>Connection Error. Is Backend running?</td></tr>";
+            }
+        }
+
+        async function completeTask(taskId) {
+            const response = await fetch(`${API_URL}/tasks/${taskId}/complete`, { method: 'PUT' });
+            if (response.ok) {
+                const data = await response.json();
+                const storedUser = JSON.parse(localStorage.getItem('user_session'));
+                const user = data.user || storedUser;
+                if (data.user) {
+                    localStorage.setItem('user_session', JSON.stringify(data.user));
+                    setupUserProfile(data.user);
+                }
+                const userId = user.id || user._id;
+                loadDashboardTasks(userId);
+                loadRewards(userId);
+
+                if (data.newlyUnlocked && data.newlyUnlocked.length > 0) {
+                    showCertificate(data.newlyUnlocked[data.newlyUnlocked.length - 1], user);
+                } else if (data.tokensAwarded) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: `+${data.tokensAwarded} tokens earned`,
+                        showConfirmButton: false,
+                        timer: 1800,
+                        background: 'rgba(17,24,49,0.92)',
+                        color: '#fff'
+                    });
+                }
+            }
+        }
+
+        async function deleteTask(taskId) {
+            const response = await fetch(`${API_URL}/tasks/${taskId}`, { method: 'DELETE' });
+            if (response.ok) {
+                const user = JSON.parse(localStorage.getItem('user_session'));
+                loadDashboardTasks(user.id || user._id);
+            }
+        }
+
+        async function loadDashboardMilestones(userId) {
+            const container = document.getElementById('dashboard-milestones');
+            try {
+                const response = await fetch(`${API_URL}/milestones/user/${userId}`);
+                const milestones = await response.json();
+                if (!milestones || milestones.length === 0) {
+                    container.innerHTML = "<p style='font-size:13px; color:rgba(255,255,255,0.3);'>No active milestones.</p>";
+                    return;
+                }
+                container.innerHTML = milestones.map(m => `
+                    <div class="milestone" style="margin-bottom: 20px;">
+                        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:8px; color:var(--text-main);">
+                            <span>${m.name}</span><strong>${m.progress}%</strong>
+                        </div>
+                        <div class="progress-bar" style="height:6px; background:rgba(255,255,255,0.05); border-radius:10px; overflow:hidden;">
+                            <div class="fill" style="width:${m.progress}%; background:linear-gradient(90deg, var(--sky-blue), var(--purple)); height:100%;"></div>
+                        </div>
+                    </div>`).join('');
+            } catch (err) { container.innerHTML = "<p style='color:gray;'>Error loading milestones.</p>"; }
+        }
+
+        async function loadRewards(userId) {
+            try {
+                const response = await fetch(`${API_URL}/analytics/user/${userId}`);
+                const analytics = await response.json();
+                const gamification = analytics.gamification || {};
+                const achievements = gamification.achievements || [];
+                const categoryTokens = gamification.categoryTokens || categoryColors;
+                const nextReward = gamification.nextReward;
+
+                document.getElementById('rewardTokenCount').innerText = gamification.tokens || 0;
+                document.getElementById('rewardLevelLabel').innerText = `Level ${gamification.level || 1}`;
+                document.getElementById('rewardProgressLabel').innerText = `${gamification.progressCurrent || 0} / ${gamification.progressTarget || 100}`;
+                document.getElementById('rewardPercentLabel').innerText = `${gamification.progressPercent || 0}%`;
+                document.getElementById('rewardProgressFill').style.width = `${gamification.progressPercent || 0}%`;
+
+                if (nextReward) {
+                    document.getElementById('rewardNextBadge').innerText = `Next: ${nextReward.name.split(' ')[0]}`;
+                    document.getElementById('rewardNextLabel').innerText = `${nextReward.icon} ${nextReward.name} unlocks at ${nextReward.threshold} tokens.`;
+                } else {
+                    document.getElementById('rewardNextBadge').innerText = 'All Rewards Unlocked';
+                    document.getElementById('rewardNextLabel').innerText = 'You have reached the highest reward tier. Keep building your lead.';
+                }
+
+                document.getElementById('achievementGrid').innerHTML = achievements.map(reward => `
+                    <div class="achievement-card ${reward.unlocked ? '' : 'locked'}">
+                        <div style="font-size:24px;">${reward.icon}</div>
+                        <strong>${reward.name}</strong>
+                        <div style="color:var(--text-dim); font-size:12px; margin-top:6px;">
+                            ${reward.unlocked ? `Unlocked ${reward.unlockedDate || ''}` : `${reward.threshold} tokens required`}
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('tokenLegend').innerHTML = Object.entries(categoryTokens).map(([name, value]) => `
+                    <div class="token-legend-item">
+                        <span>${name}</span>
+                        <span>+${value}</span>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('achievementGrid').innerHTML = `<p style="color:var(--text-soft);">Rewards are offline until the backend responds.</p>`;
+            }
+        }
+
+        function toggleProfile() {
+            const modal = document.getElementById('profileModal');
+            modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function logoutUser() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+
+        function showCertificate(reward, user) {
+            currentCertificate = reward;
+            document.getElementById('certificateTitle').innerText = reward.name;
+            document.getElementById('certificateAchievement').innerText = `${reward.icon} ${reward.name} unlocked`;
+            document.getElementById('certificateName').innerText = user.email || 'task_tracker_351';
+            document.getElementById('certificateDate').innerText = `Awarded on ${reward.unlockedDate || new Date().toLocaleDateString()}`;
+            document.getElementById('certificateModal').style.display = 'block';
+        }
+
+        function closeCertificate() {
+            document.getElementById('certificateModal').style.display = 'none';
+        }
+
+        function downloadCertificate() {
+            if (!currentCertificate) return;
+            const user = JSON.parse(localStorage.getItem('user_session') || '{}');
+            const printWindow = window.open('', '_blank', 'width=900,height=700');
+            if (!printWindow) return;
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>${currentCertificate.name}</title>
+                    <style>
+                        body { font-family: Georgia, serif; background: #f5f0e8; padding: 40px; color: #1f2438; }
+                        .certificate { max-width: 760px; margin: 0 auto; border: 12px solid #d4af37; padding: 48px; text-align: center; background: white; }
+                        h1 { font-size: 42px; margin-bottom: 10px; }
+                        h2 { font-size: 30px; margin: 18px 0; }
+                        p { font-size: 18px; line-height: 1.6; }
+                    </style>
+                </head>
+                <body>
+                    <div class="certificate">
+                        <p>Certificate of Achievement</p>
+                        <h1>${currentCertificate.icon} ${currentCertificate.name}</h1>
+                        <p>This certificate is proudly presented to</p>
+                        <h2>${user.email || 'task_tracker_351'}</h2>
+                        <p>for reaching ${currentCertificate.threshold} tokens and unlocking a new milestone in TaskTracker.</p>
+                        <p>${currentCertificate.unlockedDate || new Date().toLocaleDateString()}</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => printWindow.print(), 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('certificateModal').addEventListener('click', (event) => {
+                if (event.target.id === 'certificateModal') {
+                    closeCertificate();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

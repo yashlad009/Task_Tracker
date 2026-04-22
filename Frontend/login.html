@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register | APMS PRO</title>
+    <link rel="stylesheet" href="login.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="app-config.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div id="loginSection" class="animate__animated animate__fadeIn">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p class="toggle-link" onclick="toggleForms()">Don't have an account? Register</p>
+    </div>
+
+    <div id="registerSection" class="hidden animate__animated animate__fadeIn">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <input type="email" id="regEmail" placeholder="Email" required>
+            <input type="password" id="regPassword" placeholder="Password" required>
+            
+            <div style="position: relative; margin-top: 10px;">
+                <input type="text" id="regAdminKey" placeholder="Admin Key (Optional)">
+                <small style="color: rgba(255,255,255,0.5); font-size: 10px; display: block; margin-top: -8px; margin-bottom: 10px;">Only required for Administrative access.</small>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+        <p class="toggle-link" onclick="toggleForms()">Already have an account? Login</p>
+    </div>
+</div>
+
+<footer class="login-footer">
+    <div class="login-footer-content">
+        <div>
+            Contact:
+            <a class="login-footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+        </div>
+        <div class="login-footer-socials">
+            <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+        </div>
+        <div class="login-footer-rights">All rights are reserved.</div>
+    </div>
+</footer>
+
+<script>
+    const API_URL = `${window.getApiBaseUrl()}/auth`;
+
+    // --- UI HELPERS ---
+    function showSuccess(msg) {
+        Swal.fire({
+            title: 'Success!',
+            text: msg,
+            icon: 'success',
+            background: 'rgba(255, 255, 255, 0.9)',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    }
+
+    function showError(msg) {
+        Swal.fire({
+            title: 'Error',
+            text: msg,
+            icon: 'error',
+            background: 'rgba(255, 255, 255, 0.9)',
+            confirmButtonColor: '#ff3b30'
+        });
+    }
+
+    function toggleForms() {
+        document.getElementById('loginSection').classList.toggle('hidden');
+        document.getElementById('registerSection').classList.toggle('hidden');
+    }
+
+    // --- REGISTRATION LOGIC ---
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+        const adminKey = document.getElementById('regAdminKey').value;
+
+        Swal.fire({ title: 'Sending OTP...', didOpen: () => { Swal.showLoading(); } });
+
+        try {
+            const otpRes = await fetch(`${API_URL}/send-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }) 
+            });
+
+            if (otpRes.ok) {
+                const { value: otpCode } = await Swal.fire({
+                    title: 'Verify Email',
+                    text: `Code sent to ${email}`,
+                    input: 'text',
+                    inputPlaceholder: 'Enter OTP',
+                    showCancelButton: true
+                });
+
+                if (otpCode) {
+                    const finalRes = await fetch(`${API_URL}/verify-and-register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password, otp: otpCode, adminKey })
+                    });
+
+                    if (finalRes.ok) {
+                        showSuccess("Account Created Successfully!");
+                        toggleForms();
+                    } else {
+                        showError("Invalid OTP or registration failed.");
+                    }
+                }
+            } else {
+                showError("Could not send OTP. Check if email is valid.");
+            }
+        } catch (error) {
+            showError("Backend connection failed. Ensure IntelliJ is running.");
+        }
+    });
+
+   // --- LOGIN LOGIC (TAB-SYNC FIX) ---
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const response = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (response.ok) {
+                const userData = await response.json();
+                
+                if (userData.role === "ADMIN") {
+                    // Remove any old admin data, but LEAVE 'user_session' alone
+                    localStorage.removeItem('admin_session');
+                    localStorage.setItem('admin_session', JSON.stringify(userData));
+                    
+                    showSuccess("Welcome, System Admin!");
+                    setTimeout(() => { window.location.href = "admin.html"; }, 1500);
+                } else {
+                    // Remove any old user data, but LEAVE 'admin_session' alone
+                    localStorage.removeItem('user_session');
+                    localStorage.setItem('user_session', JSON.stringify(userData));
+                    
+                    showSuccess("Welcome back!");
+                    setTimeout(() => { window.location.href = "index.html"; }, 1500);
+                }
+
+            } else {
+                showError("Invalid email or password.");
+            }
+        } catch (error) {
+            showError("Server is offline.");
+        }
+    });
+
+    // --- BACKGROUND ANIMATION ---
+    document.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth) * 100;
+        const y = (e.clientY / window.innerHeight) * 100;
+        document.body.style.backgroundPosition = `${x}% ${y}%`;
+    });
+</script>
+
+<style>
+    /* CSS Helpers for Toggle */
+    .hidden { display: none !important; }
+    .toggle-link { cursor: pointer; color: var(--sky-blue); margin-top: 15px; font-size: 14px; text-decoration: underline; }
+</style>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+
+
+2.there are user portal and admin portal so we have to create the admin portal 
+3. the user portal and admin portal connects to profile in dashboard
+4.For analytics now for just we use javascript but it is not suitable for dynamic data so we have to use numpy and pandas with matplotlib.pyplot
+5.for role there should be for user see only and for admin can edit the analytics of all users 
+6.the scheduled plan web page is remaining that sends mail to user for scheduled plan
+7.I have planned that there is sceduled task page that as task planning but its priority is very high that takes date and it send email to that person 
+8. Rename the apms project name by task tracker 
+9. adding msg system to the admin which fetches all the users and its analytics
+ 

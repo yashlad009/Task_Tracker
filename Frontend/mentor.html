@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Mentor | APMS PRO</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('apms-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <script src="app-config.js"></script>
+    <script src="theme.js" defer></script>
+    <style>
+        /* Specific page layout fixes */
+        .mentor-layout {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .mentor-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .ai-sidebar-card {
+            padding: 24px;
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
+        .ai-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #fff;
+            margin-bottom: 16px;
+            box-shadow: 0 0 24px var(--neon-glow);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="apms3.png" alt="APMS PRO Logo" style="height: 90px; margin-right: 10px; vertical-align: middle;">
+                Task<span>Tracker</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="tasks.html">Daily Planning</a></li>
+                <li><a href="important.html">Imp Tasks</a></li>
+                <li><a href="milestone.html">Milestones</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="roles.html">Team</a></li>
+                <li><a href="mentor.html" class="active">AI Mentor</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
+                </button>
+                <div id="nav-initials" class="user-avatar" onclick="toggleProfile()" style="background:linear-gradient(135deg, #9d50bb, #6e48aa); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold;">U</div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="profileModal" class="modal" style="display:none; position: fixed; z-index: 1000; right: 20px; top: 70px;">
+        <div class="modal-content panel" style="width: 250px; background: var(--glass-panel-strong); border: 1px solid var(--glass-border);">
+            <div style="text-align: center;">
+                <div id="user-initials-large" style="width:60px; height:60px; background:var(--purple); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 10px auto; font-weight:bold;">US</div>
+                <p id="display-email" style="font-weight:bold; margin-bottom:5px; font-size: 14px; overflow: hidden; text-overflow: ellipsis;">User Email</p>
+                <p id="display-role" style="color:var(--sky-blue); font-size:11px; text-transform: uppercase; letter-spacing: 1px;">Standard User</p>
+                <hr style="margin: 15px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button class="btn-sm" onclick="logoutUser()" style="background:#ff7675; width:100%;">Logout Session</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <header class="content-header">
+            <h1>AI Mentor</h1>
+            <p>Get personalized career and task planning advice based on your current progress.</p>
+        </header>
+
+        <div class="mentor-layout">
+            <div class="ai-sidebar-card">
+                <div class="ai-avatar"><i class="fas fa-robot"></i></div>
+                <h3>TaskTracker AI</h3>
+                <p style="color: var(--text-dim); font-size: 13px; margin-top: 8px;">
+                    Your intelligent guide to achieving your goals. I analyze your tasks, milestones, and gamification level to provide strategic advice.
+                </p>
+                <div style="margin-top: 20px; font-size: 12px; color: var(--text-soft); text-align: left;">
+                    <strong>Topics I can help with:</strong>
+                    <ul style="margin-left: 15px; margin-top: 5px;">
+                        <li>Prioritizing today's tasks</li>
+                        <li>Overcoming roadblocks</li>
+                        <li>Strategies for leveling up</li>
+                        <li>Balancing different categories</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-history" id="chat-history">
+                    <div class="chat-message message-ai">
+                        Hello! I'm your AI Mentor. I have reviewed your current level and tasks. How can I help you strategize today?
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Ask for advice, e.g., 'What should I prioritize today?'..." onkeypress="handleKeyPress(event)">
+                    <button class="btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.getApiBaseUrl();
+        let currentUser = null;
+
+        window.onload = function() {
+            const userData = localStorage.getItem('user_session'); 
+            
+            if (!userData) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            try {
+                currentUser = JSON.parse(userData);
+                setupUserProfile(currentUser);
+            } catch (e) {
+                localStorage.clear();
+                window.location.href = "login.html";
+            }
+
+            window.onclick = function(event) {
+                if (!event.target.closest('.nav-actions') && !event.target.closest('#profileModal')) {
+                    document.getElementById('profileModal').style.display = 'none';
+                }
+            }
+        };
+
+        function setupUserProfile(user) {
+            const initial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
+            document.getElementById("nav-initials").innerText = initial;
+            document.getElementById("user-initials-large").innerText = initial;
+            document.getElementById("display-email").innerText = user.email || "Unknown User";
+            document.getElementById("display-role").innerText = user.role || "Standard User";
+        }
+
+        function toggleProfile() {
+            const modal = document.getElementById('profileModal');
+            modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function logoutUser() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const inputField = document.getElementById('chat-input');
+            const message = inputField.value.trim();
+            if (!message) return;
+
+            // Clear input
+            inputField.value = '';
+
+            // Add user message
+            addMessageToChat(message, 'user');
+
+            // Show typing indicator
+            const typingIndicatorId = addTypingIndicator();
+
+            try {
+                const userId = currentUser.id || currentUser._id;
+                const response = await fetch(`${API_URL}/api/ai/chat/${userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                removeTypingIndicator(typingIndicatorId);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    addMessageToChat(data.response, 'ai');
+                } else {
+                    addMessageToChat("Sorry, I encountered an error. Please try again.", 'ai');
+                }
+            } catch (err) {
+                removeTypingIndicator(typingIndicatorId);
+                addMessageToChat("Could not connect to the backend.", 'ai');
+            }
+        }
+
+        function addMessageToChat(text, sender) {
+            const history = document.getElementById('chat-history');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message message-${sender}`;
+            
+            if (sender === 'ai') {
+                // Parse markdown for AI
+                msgDiv.innerHTML = marked.parse(text);
+            } else {
+                msgDiv.textContent = text;
+            }
+            
+            history.appendChild(msgDiv);
+            history.scrollTop = history.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const id = 'typing-' + Date.now();
+            const history = document.getElementById('chat-history');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = id;
+            typingDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            history.appendChild(typingDiv);
+            history.scrollTop = history.scrollHeight;
+            return id;
+        }
+
+        function removeTypingIndicator(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.remove();
+            }
+        }
+    </script>
+</body>
+</html>

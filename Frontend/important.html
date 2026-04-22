@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Important Tasks | APMS PRO</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('apms-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <script src="app-config.js"></script>
+    <script src="theme.js" defer></script>
+    <style>
+        input[type="datetime-local"] {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+        }
+        .important-badge {
+            background: #ff3b30;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="apms3.png" alt="APMS PRO Logo" style="height: 90px; margin-right: 10px; vertical-align: middle;">
+                Task<span>Tracker</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="tasks.html">Daily Planning</a></li>
+                <li><a href="important.html" class="active">Imp Tasks</a></li>
+                <li><a href="milestone.html">Milestones</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="roles.html">Team</a></li>
+                <li><a href="mentor.html">AI Mentor</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="content-header">
+            <h1><i class="fas fa-star" style="color: #f1c40f;"></i> Important Tasks</h1>
+            <p>Schedule high-priority events. We'll email you 30 minutes before they start.</p>
+        </header>
+
+        <div class="panel" style="margin-bottom: 30px;">
+            <h3>Schedule New Alert</h3>
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                <input type="text" id="impTaskName" placeholder="What is the important task?">
+                <div style="display: flex; gap: 10px;">
+                    <input type="datetime-local" id="impTaskTime" style="flex: 1;">
+                    <button onclick="scheduleImportantTask()" class="btn-primary" style="width: 200px;">Set Reminder</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Scheduled Reminders</h3>
+            <table class="task-table" style="width: 100%;">
+                <thead>
+                    <tr style="text-align: left; color: var(--sky-blue); font-size: 12px;">
+                        <th style="padding: 10px;">TASK & NOTIFICATION TIME</th>
+                        <th style="text-align: center;">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="important-task-list">
+                    <tr><td colspan="2" style="text-align: center; padding: 20px;">No scheduled reminders.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="site-footer" >
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span>Contact:</span>
+                <a class="footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+            </div>
+            <div class="footer-socials">
+                <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            <div class="footer-rights">All rights are reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = window.getApiBaseUrl();
+
+        window.onload = function() {
+            const userData = localStorage.getItem('user_session');
+            if (!userData) {
+                window.location.href = "login.html";
+                return;
+            }
+            loadImportantTasks();
+        };
+
+        async function scheduleImportantTask() {
+            const userData = JSON.parse(localStorage.getItem('user_session'));
+            const taskName = document.getElementById('impTaskName').value;
+            const taskTimeLocal = document.getElementById('impTaskTime').value;
+
+            if (!taskName || !taskTimeLocal) {
+                Swal.fire("Wait!", "Please provide both a name and a time.", "warning");
+                return;
+            }
+
+            // --- THE CRITICAL TIMEZONE FIX ---
+            // Converts your IST selection to the UTC standard MongoDB expects
+            const utcTime = new Date(taskTimeLocal).toISOString();
+
+            const payload = {
+                taskName: taskName,
+                eventTime: utcTime,
+                userEmail: userData.email,
+                userId: userData.id || userData._id
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/api/important/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        title: "Scheduled!",
+                        text: "We will email you 30 minutes before this task.",
+                        icon: "success",
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    document.getElementById('impTaskName').value = "";
+                    document.getElementById('impTaskTime').value = "";
+                    loadImportantTasks();
+                }
+            } catch (err) {
+                Swal.fire("Offline", "Backend server is unreachable.", "error");
+            }
+        }
+
+        async function loadImportantTasks() {
+            const user = JSON.parse(localStorage.getItem('user_session'));
+            const userId = user.id || user._id;
+            const tableBody = document.getElementById('important-task-list');
+
+            try {
+                const response = await fetch(`${API_URL}/api/important/user/${userId}`);
+                const tasks = await response.json();
+
+                if (!tasks || tasks.length === 0) {
+                    tableBody.innerHTML = "<tr><td colspan='2' style='text-align: center; padding: 20px;'>No high-priority tasks scheduled.</td></tr>";
+                    return;
+                }
+
+                // Sort tasks: processed tasks at the bottom
+                tableBody.innerHTML = tasks.sort((a,b) => a.processed - b.processed).map(t => {
+                    const date = new Date(t.eventTime).toLocaleString();
+                    const statusIcon = t.processed 
+                        ? '<span style="color: #aaa;"><i class="fas fa-check-circle"></i> Notified</span>' 
+                        : '<span style="color: #27ae60;"><i class="fas fa-clock"></i> Active Alert</span>';
+                    
+                    return `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); opacity: ${t.processed ? '0.6' : '1'}">
+                            <td style="padding:15px;">
+                                <span class="important-badge" style="background: ${t.processed ? '#555' : '#ff3b30'}">IMPORTANT</span>
+                                <strong style="color: var(--text-main);">${t.taskName}</strong><br>
+                                <small style="color: var(--sky-blue);">${date}</small>
+                            </td>
+                            <td style="text-align: center;">${statusIcon}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) { console.error(err); }
+        }
+    </script>
+</body>
+</html>

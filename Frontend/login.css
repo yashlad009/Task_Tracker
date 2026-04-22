@@ -1,0 +1,193 @@
+/* Google Font for that modern look */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --purple: #764ba2;
+    --skyblue: #667eea;
+    --pink: #e73c7e;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+    
+    /* The 3-color blend you asked for */
+    background: linear-gradient(135deg, var(--purple), var(--skyblue), var(--pink));
+    background-size: 200% 200%; /* Important for the movement effect */
+    
+    /* This makes the background transition smoothly when the mouse moves */
+    transition: background-position 0.2s ease-out; 
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Glassmorphism Container */
+.container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+    width: 350px;
+    color: white;
+    z-index: 10;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.container:hover {
+    transform: scale(1.02); /* Slight pop when hovering over the box */
+}
+
+h2 {
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+/* Interactive Inputs */
+input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: white;
+    outline: none;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+input:focus {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid white;
+}
+
+/* Shiny Button */
+button {
+    width: 100%;
+    padding: 12px;
+    background: white;
+    color: var(--purple);
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: var(--pink);
+    color: white;
+    box-shadow: 0 5px 15px rgba(231, 60, 126, 0.4);
+    transform: translateY(-2px);
+}
+
+.toggle-link {
+    display: block;
+    margin-top: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+.toggle-link:hover {
+    opacity: 1;
+}
+
+.hidden {
+    display: none;
+}
+
+.login-footer {
+    margin: 28px 20px 24px;
+    padding: 18px 24px;
+    width: min(720px, calc(100% - 40px));
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 25px 45px rgba(0,0,0,0.18);
+    color: white;
+}
+
+.login-footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+}
+
+.login-footer-email {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-footer-socials {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.login-footer-socials a {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.login-footer-socials a:hover {
+    transform: translateY(-2px) scale(1.05);
+    background: rgba(255,255,255,0.12);
+    box-shadow: 0 0 18px rgba(255,255,255,0.25);
+}
+
+.login-footer-rights {
+    width: 100%;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.8);
+}
+
+@media (max-width: 768px) {
+    .login-footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Apple Style Popup Customization */
+.apple-popup {
+    border-radius: 20px !important;
+    font-family: 'Poppins', sans-serif !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+}
+
+/* Adding the animation library for the bounce */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');

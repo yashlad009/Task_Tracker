@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Master Portal | APMS PRO</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('apms-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <script src="app-config.js"></script>
+    <script src="theme.js" defer></script>
+    <style>
+        .clickable-card { cursor: pointer; transition: 0.3s ease; }
+        .clickable-card:hover { transform: translateY(-5px); border-color: var(--sky-blue); }
+        .clickable-card.active { border: 2px solid var(--purple); background: rgba(157, 80, 187, 0.1); }
+        .data-panel { display: none; margin-top: 30px; animation: fadeIn 0.5s ease; }
+        .data-panel.active { display: block; }
+        .admin-table { width: 100%; border-collapse: collapse; background: var(--glass-panel); border-radius: 15px; overflow: hidden; }
+        .admin-table th { background: rgba(255,255,255,0.05); color: var(--sky-blue); padding: 15px; text-align: left; font-size: 13px; }
+        .admin-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); font-size: 14px; }
+        .user-tag { background: var(--purple); padding: 3px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .logout-btn { background: rgba(255, 59, 48, 0.2); color: #ff3b30 !important; border-radius: 8px; padding: 5px 15px !important; }
+        .query-card { background: rgba(255,255,255,0.05); border-left: 4px solid var(--purple); padding: 20px; border-radius: 10px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><i class="fas fa-user-shield"></i> APMS<span>PRO</span> ADMIN</div>
+            <ul class="nav-links">
+                <li><a href="admin.html" id="nav-dash" class="active">Admin Dashboard</a></li>
+                <li><a href="#" id="nav-queries" onclick="showPanel('queries')">User Queries</a></li>
+                <li><a href="#" onclick="logoutAdmin()" class="logout-btn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="content-header">
+            <h1>Global System Overview</h1>
+            <br>
+            <p>Master Control: Real-time tracking of all users, tasks, and milestones.</p>
+            <br>
+        </header>
+
+        <div class="stats-row">
+            <div class="stat-card clickable-card" id="cardUsers" onclick="showPanel('users')">
+                <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+                <div><span class="label">Total Users</span><br><span id="totalUsers" class="value">0</span></div>
+            </div>
+            <div class="stat-card clickable-card" id="cardTasks" onclick="showPanel('tasks')">
+                <div class="stat-icon sky"><i class="fas fa-tasks"></i></div>
+                <div><span class="label">Global Tasks</span><br><span id="totalTasks" class="value">0</span></div>
+            </div>
+            <div class="stat-card clickable-card" id="cardMiles" onclick="showPanel('milestones')">
+                <div class="stat-icon green" style="background: #27ae60;"><i class="fas fa-chart-pie"></i></div>
+                <div><span class="label">Avg. Milestone %</span><br><span id="sysEfficiency" class="value">0%</span></div>
+            </div>
+        </div>
+
+        <div id="panel-users" class="data-panel panel">
+            <h3>User Directory</h3>
+            <table class="admin-table">
+                <thead><tr><th>User ID</th><th>Email Address</th><th>Role</th></tr></thead>
+                <tbody id="list-users"></tbody>
+            </table>
+        </div>
+
+        <div id="panel-tasks" class="data-panel panel">
+            <h3>Global Task Monitor</h3>
+            <table class="admin-table">
+                <thead><tr><th>User Email</th><th>Task Description</th><th>Status</th></tr></thead>
+                <tbody id="list-tasks"></tbody>
+            </table>
+        </div>
+
+        <div id="panel-milestones" class="data-panel panel">
+            <h3>Performance & Milestones</h3>
+            <table class="admin-table">
+                <thead><tr><th>User Email</th><th>Milestone Name</th><th>Progress</th></tr></thead>
+                <tbody id="list-milestones"></tbody>
+            </table>
+        </div>
+
+        <div id="panel-queries" class="data-panel panel">
+            <h3>User Support Inbox</h3>
+            <div id="list-queries" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span>Contact:</span>
+                <a class="footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+            </div>
+            <div class="footer-socials">
+                <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            <div class="footer-rights">All rights are reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = window.getApiBaseUrl();
+        let masterData = { users: [], tasks: [], milestones: [] };
+        let userMap = {}; 
+
+        window.onload = async function() {
+            const adminData = localStorage.getItem('admin_session');
+            if (!adminData) { window.location.href = "login.html"; return; }
+            
+            const admin = JSON.parse(adminData);
+            if (admin.role !== "ADMIN") { window.location.href = "index.html"; return; }
+            
+            await loadAllData();
+            // Start by showing the Users panel
+            showPanel('users'); 
+        };
+
+        async function loadAllData() {
+            try {
+                // We fetch everything first
+                const [uRes, tRes, mRes] = await Promise.all([
+                    fetch(`${API_URL}/auth/users`),
+                    fetch(`${API_URL}/tasks/all`),
+                    fetch(`${API_URL}/milestones/all`)
+                ]);
+                
+                masterData.users = await uRes.json();
+                masterData.tasks = await tRes.json();
+                masterData.milestones = await mRes.json();
+
+                // Build lookup map for Emails (Handles both u.id and u._id)
+                userMap = {};
+                masterData.users.forEach(u => {
+                    const id = u.id || u._id;
+                    if(id) userMap[String(id).trim()] = u.email;
+                });
+
+                document.getElementById('totalUsers').innerText = masterData.users.length;
+                document.getElementById('totalTasks').innerText = masterData.tasks.length;
+                
+                const totalProgress = masterData.milestones.reduce((acc, m) => acc + (m.progress || 0), 0);
+                const avgProgress = masterData.milestones.length > 0 
+                    ? Math.round(totalProgress / masterData.milestones.length) 
+                    : 0;
+                document.getElementById('sysEfficiency').innerText = avgProgress + "%";
+
+                // Refresh all views now that data is definitely here
+                renderUsers();
+                renderTasks();
+                renderMilestones();
+
+            } catch(e) { 
+                console.error("Global Sync Error", e); 
+                Swal.fire('Sync Error', 'Check IntelliJ Console', 'error');
+            }
+        }
+
+        function showPanel(type) {
+            document.querySelectorAll('.data-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.clickable-card').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            
+            document.getElementById(`panel-${type}`).classList.add('active');
+            
+            if(type === 'queries') {
+                document.getElementById('nav-queries').classList.add('active');
+                renderQueries();
+            } else {
+                document.getElementById('nav-dash').classList.add('active');
+                const cardId = type === 'users' ? 'cardUsers' : (type === 'tasks' ? 'cardTasks' : 'cardMiles');
+                document.getElementById(cardId).classList.add('active');
+            }
+        }
+
+        function renderUsers() {
+            document.getElementById('list-users').innerHTML = masterData.users.map(u => `
+                <tr>
+                    <td><code>${(u.id || u._id || 'N/A').substring(0,8)}...</code></td>
+                    <td>${u.email}</td>
+                    <td><span class="user-tag">${u.role || 'USER'}</span></td>
+                </tr>`).join('');
+        }
+
+        function renderTasks() {
+            const categoryColors = { 
+                'Study': '#9d50bb', 'Health': '#27ae60', 'Entertainment': '#ff7675', 
+                'Work': '#00d2ff', 'Personal': '#ffb547' 
+            };
+            const taskList = document.getElementById('list-tasks');
+            const sortedTasks = [...masterData.tasks].reverse();
+
+            taskList.innerHTML = sortedTasks.map(t => {
+                const userIdKey = String(t.userId).trim();
+                const email = userMap[userIdKey] || `<span style="color:#ff7675">ID Mismatch (${userIdKey.substring(0,5)})</span>`;
+                
+                const catName = t.category || "Personal";
+                const catColor = categoryColors[catName] || "#777";
+                const isDone = t.status === 'Completed';
+
+                return `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td><strong style="color:var(--sky-blue); font-size:13px;">${email}</strong></td>
+                        <td>
+                            <span style="background:${catColor}; font-size:9px; padding:2px 7px; border-radius:4px; margin-right:10px; font-weight:bold; text-transform:uppercase; color:white;">${catName}</span>
+                            <span style="color:#eee;">${t.text || t.description || 'No Description'}</span>
+                        </td>
+                        <td style="color:${isDone ? '#27ae60' : '#f1c40f'}">
+                            <i class="fas ${isDone ? 'fa-check-circle' : 'fa-spinner fa-spin'}"></i> 
+                            <span style="font-size:12px; font-weight:bold; margin-left:5px;">${t.status || 'Pending'}</span>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function renderMilestones() {
+            document.getElementById('list-milestones').innerHTML = masterData.milestones.map(m => {
+                const userIdKey = String(m.userId).trim();
+                const email = userMap[userIdKey] || 'Unknown User';
+                return `<tr>
+                    <td><strong>${email}</strong></td>
+                    <td>${m.name}</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="flex:1; background:rgba(255,255,255,0.1); height:8px; border-radius:10px; overflow:hidden;">
+                                <div style="width:${m.progress}%; background:linear-gradient(90deg, #00d2ff, #9d50bb); height:100%;"></div>
+                            </div>
+                            <span style="font-weight:bold; color:var(--sky-blue);">${m.progress}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function renderQueries() {
+            try {
+                const res = await fetch(`${API_URL}/queries/all`);
+                const queries = await res.json();
+                document.getElementById('list-queries').innerHTML = queries.map(q => `
+                    <div class="query-card">
+                        <strong>From: ${q.userEmail}</strong>
+                        <p>${q.message}</p>
+                        <hr>
+                        ${q.adminReply ? `<p style="color:var(--purple)">Replied: ${q.adminReply}</p>` : 
+                        `<textarea id="replyText-${q.id}" placeholder="Type reply..." style="width:100%; margin-bottom:10px; background:var(--input-bg); color:var(--text-main); border:1px solid rgba(255,255,255,0.1); padding:10px; border-radius:8px;"></textarea>
+                         <button onclick="submitReply('${q.id}')" class="btn-primary" style="padding:5px 15px; font-size:12px; border:none; cursor:pointer;">Send Reply</button>`}
+                    </div>`).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        async function submitReply(id) {
+            const reply = document.getElementById(`replyText-${id}`).value;
+            if(!reply) return;
+            await fetch(`${API_URL}/queries/reply/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reply: reply })
+            });
+            renderQueries();
+        }
+
+        function logoutAdmin() {
+            localStorage.removeItem('admin_session');
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>

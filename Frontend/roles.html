@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Roles | APMS PRO</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('apms-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <script src="app-config.js"></script>
+    <script src="theme.js" defer></script>
+    <style>
+        /* Table Styling */
+        .task-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .task-table th, .task-table td { width: 33.33%; padding: 20px; text-align: center; }
+        .task-table th { border-bottom: 2px solid var(--glass-border); color: var(--sky-blue); font-weight: 700; }
+
+        /* Support Section */
+        .support-card {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        textarea {
+            width: 100%; max-width: 600px; height: 100px;
+            background: var(--input-bg); border: 1px solid var(--glass-border);
+            color: var(--text-main); padding: 15px; border-radius: 12px; margin-bottom: 15px;
+            resize: none; outline: none;
+        }
+
+        /* Conversation History */
+        #replyArea { margin-top: 30px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .msg-bubble {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--purple);
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="apms3.png" alt="APMS PRO Logo" style="height: 90px; margin-right: 10px; vertical-align: middle;">
+                Task<span>Tracker</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="tasks.html">Daily Planning</a></li>
+                <li><a href="important.html">Imp Tasks</a></li>
+                <li><a href="milestone.html">Milestones</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="roles.html" class="active">Team</a></li>
+                <li><a href="mentor.html">AI Mentor</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="content-header">
+            <h1>Role Management</h1>
+            <br>
+            <p>System permissions and administrative coordination.</p>
+            <br>
+        </header>
+
+        <div class="panel">
+            <table class="task-table">
+                <thead>
+                    <tr><th>USER</th><th>ROLE</th><th>STATUS</th></tr>
+                </thead>
+                <tbody id="roleList">
+                    <tr>
+                        <td id="userNameDisplay" style="font-weight: bold; color: var(--text-main);">User</td>
+                        <td id="userRoleDisplay" style="color: var(--purple); font-weight: 700;">Loading...</td>
+                        <td><span style="color: #27ae60;"><i class="fas fa-circle" style="font-size: 8px;"></i> Active</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="support-card" style="text-align: center;">
+            <i class="fas fa-headset" style="font-size: 40px; color: var(--sky-blue); margin-bottom: 15px;"></i>
+            <h3>Message to Admin</h3>
+            <p style="margin-bottom: 15px; color: rgba(255,255,255,0.7);">Direct query to System Administrator</p>
+            
+            <textarea id="supportMsg" placeholder="Type your query here..."></textarea>
+            <br>
+            <button onclick="sendMessage()" class="btn-primary">Send to Admin</button>
+
+            <div id="replyArea">
+                <h4 style="margin-bottom:15px; color:var(--sky-blue); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                    <i class="fas fa-comments"></i> Conversation History
+                </h4>
+                <div id="replyList">
+                    <p style="opacity:0.5; font-size:13px; text-align: center;">No messages yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span>Contact:</span>
+                <a class="footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+            </div>
+            <div class="footer-socials">
+                <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            <div class="footer-rights">All rights are reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = window.getApiBaseUrl();
+
+        // --- GATEKEEPER LOGIC ---
+        window.onload = function() {
+            const userData = localStorage.getItem('user_session'); // UNIFIED KEY
+            if (!userData) {
+                window.location.href = "login.html";
+                return;
+            }
+            
+            const user = JSON.parse(userData);
+            // Dynamically update the role table
+            document.getElementById('userNameDisplay').innerText = user.email.split('@')[0];
+            document.getElementById('userRoleDisplay').innerText = user.role || "Standard User";
+            
+            loadMyReplies();
+        };
+
+        async function sendMessage() {
+            const userData = localStorage.getItem('user_session');
+            const msgInput = document.getElementById('supportMsg');
+            const msg = msgInput.value.trim();
+
+            if (!msg) {
+                Swal.fire("Notice", "Please enter a message.", "info");
+                return;
+            }
+
+            if (!userData) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            const user = JSON.parse(userData);
+
+            try {
+                const response = await fetch(`${API_URL}/queries/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userEmail: user.email, message: msg })
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        title: "Sent!",
+                        text: "Admin will review your query.",
+                        icon: "success",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    msgInput.value = ""; 
+                    loadMyReplies(); 
+                }
+            } catch (err) {
+                Swal.fire("Offline", "Backend server is not reachable.", "error");
+            }
+        }
+
+        async function loadMyReplies() {
+            const userData = localStorage.getItem('user_session');
+            if (!userData) return;
+            
+            const user = JSON.parse(userData);
+            try {
+                const res = await fetch(`${API_URL}/queries/my-queries/${user.email}`);
+                const data = await res.json();
+                
+                const list = document.getElementById('replyList');
+                if (!data || data.length === 0) {
+                    list.innerHTML = `<p style="opacity:0.5; font-size:13px; text-align: center;">No messages yet.</p>`;
+                    return;
+                }
+
+                list.innerHTML = data.reverse().map(q => `
+                    <div class="msg-bubble">
+                        <p style="font-size:14px; line-height:1.5; color: var(--text-main);"><strong>You:</strong> ${q.message}</p>
+                        ${q.adminReply ? 
+                            `<div style="margin-top:12px; padding-top:10px; border-top: 1px solid rgba(255,255,255,0.05); color:var(--sky-blue);">
+                                <i class="fas fa-reply fa-flip-horizontal"></i> <strong>Admin:</strong> ${q.adminReply}
+                             </div>` : 
+                            `<p style="font-size:12px; opacity:0.4; margin-top:10px; color: #aaa;"><i>Status: Pending Admin Review</i></p>`
+                        }
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("History fetch failed:", err);
+            }
+        }
+
+        function logoutUser() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>

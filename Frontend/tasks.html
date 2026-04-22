@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Daily Planning | APMS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('apms-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <script src="app-config.js"></script>
+    <script src="theme.js" defer></script>
+    <style>
+        /* Category Card Grid */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .cat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cat-card i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .cat-card span {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        /* Active State for Cards */
+        .cat-card.active {
+            background: rgba(0, 210, 255, 0.1);
+            border-color: var(--sky-blue);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 210, 255, 0.2);
+        }
+
+        .cat-card.active span { color: #fff; }
+
+        /* Badge in Table */
+        .category-badge {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            margin-right: 12px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="apms3.png" alt="APMS PRO Logo" style="height: 90px; margin-right: 10px; vertical-align: middle;">
+                Task<span>Tracker</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="tasks.html" class="active">Daily Planning</a></li>
+                <li><a href="important.html">Imp Tasks</a></li>
+                <li><a href="milestone.html">Milestones</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="roles.html">Team</a></li>
+                <li><a href="mentor.html">AI Mentor</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="content-header">
+            <h1>Daily Planning</h1>
+            <br>
+            <p>Select a category and add your tasks below.</p>
+            <br>
+        </header>
+
+        <div class="category-grid">
+            <div class="cat-card active" onclick="selectCategory(this, 'Study')">
+                <i class="fas fa-book" style="color: #9d50bb;"></i>
+                <span>Study</span>
+            </div>
+            <div class="cat-card" onclick="selectCategory(this, 'Health')">
+                <i class="fas fa-heartbeat" style="color: #27ae60;"></i>
+                <span>Health</span>
+            </div>
+            <div class="cat-card" onclick="selectCategory(this, 'Entertainment')">
+                <i class="fas fa-film" style="color: #ff7675;"></i>
+                <span>Fun</span>
+            </div>
+            <div class="cat-card" onclick="selectCategory(this, 'Work')">
+                <i class="fas fa-briefcase" style="color: #00d2ff;"></i>
+                <span>Work</span>
+            </div>
+            <div class="cat-card" onclick="selectCategory(this, 'Personal')">
+                <i class="fas fa-home" style="color: #ffb547;"></i>
+                <span>Personal</span>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-bottom: 30px;">
+            <div style="display: flex; gap: 15px;">
+                <input type="text" id="taskInput" placeholder="Add Study task..." style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text-main);">
+                <button onclick="addTask()" class="btn-primary" style="width: 150px;">Add Task</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Today's Track</h3>
+            <table class="task-table" style="width: 100%;">
+                <thead>
+                    <tr style="text-align: left; color: var(--sky-blue); font-size: 12px;">
+                        <th style="padding: 10px;">Planned Task</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="planning-list">
+                    <tr><td colspan="2" style="text-align: center; padding: 20px;">Loading tasks...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span>Contact:</span>
+                <a class="footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+            </div>
+            <div class="footer-socials">
+                <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            <div class="footer-rights">All rights are reserved.</div>
+        </div>
+    </footer>
+
+<script>
+    const API_URL = window.getApiBaseUrl();
+    let selectedCategory = "Study"; 
+
+    const categoryColors = {
+        'Study': '#9d50bb', 'Health': '#27ae60', 'Entertainment': '#ff7675', 
+        'Work': '#00d2ff', 'Personal': '#ffb547'
+    };
+
+    // --- GATEKEEPER LOGIC (BREAKS THE LOOP) ---
+    window.onload = function() {
+        const userData = localStorage.getItem('user_session'); // UNIFIED KEY
+        if (!userData) { 
+            window.location.href = "login.html"; 
+            return; 
+        }
+        displayTasks();
+    };
+
+    function selectCategory(element, catName) {
+        document.querySelectorAll('.cat-card').forEach(card => card.classList.remove('active'));
+        element.classList.add('active');
+        selectedCategory = catName;
+        document.getElementById('taskInput').placeholder = `Add ${catName} task...`;
+    }
+
+    async function displayTasks() {
+        const userData = localStorage.getItem('user_session');
+        if (!userData) return;
+        
+        const user = JSON.parse(userData);
+        const userId = user.id || user._id; // Bulletproof ID
+        const table = document.getElementById('planning-list');
+
+        try {
+            const response = await fetch(`${API_URL}/tasks/user/${userId}`);
+            const tasks = await response.json();
+            
+            if (!tasks || tasks.length === 0) {
+                table.innerHTML = `<tr><td colspan="2" style="text-align:center; padding:20px; color:gray;">No tasks yet. Select a category and add one!</td></tr>`;
+                return;
+            }
+
+            table.innerHTML = tasks.reverse().map(t => {
+                const catName = t.category || 'Study';
+                const catColor = categoryColors[catName] || '#777';
+                
+                return `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding:15px;">
+                        <span class="category-badge" style="background: ${catColor}; color: white;">${catName}</span>
+                        <span style="color: var(--text-main);">${t.text || t.description}</span>
+                    </td>
+                    <td style="text-align:center;">
+                        <button onclick="deleteTask('${t.id}')" style="background:none; border:none; color:#ff7675; cursor:pointer; font-size:16px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `}).join('');
+        } catch (err) { 
+            table.innerHTML = `<tr><td colspan="2" style="text-align:center; padding:20px; color:#ff7675;">Sync Error. Check Backend.</td></tr>`;
+        }
+    }
+
+    async function addTask() {
+        const val = document.getElementById('taskInput').value;
+        const userData = localStorage.getItem('user_session');
+        if (!userData || !val) return;
+
+        const user = JSON.parse(userData);
+        const userId = user.id || user._id;
+
+        const taskData = {
+            text: val,
+            category: selectedCategory,
+            status: "Pending",
+            userId: userId 
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/tasks/add`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            });
+            if (response.ok) {
+                document.getElementById('taskInput').value = "";
+                displayTasks();
+            }
+        } catch (err) { 
+            Swal.fire('Error', 'Failed to save task', 'error'); 
+        }
+    }
+
+    async function deleteTask(id) {
+        const result = await Swal.fire({
+            title: 'Delete Task?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ff7675',
+            background: '#1a1a2e',
+            color: '#fff'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
+                if (response.ok) displayTasks();
+            } catch (err) { 
+                console.error(err); 
+            }
+        }
+    }
+</script>
+</body>
+</html>

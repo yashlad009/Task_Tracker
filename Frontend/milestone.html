@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Milestones | APMS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('apms-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <script src="app-config.js"></script>
+    <script src="theme.js" defer></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="apms3.png" alt="APMS PRO Logo" style="height: 90px; margin-right: 10px; vertical-align: middle;">
+                Task<span>Tracker</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="tasks.html">Daily Planning</a></li>
+                <li><a href="important.html">Imp Tasks</a></li>
+                <li><a href="milestone.html" class="active">Milestones</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="roles.html">Team</a></li>
+                <li><a href="mentor.html">AI Mentor</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-wrapper">
+        <header class="content-header">
+            <h1>Project Milestones</h1>
+            <br>
+            <p>Update your progress and celebrate achievements.</p>
+        </header>
+
+        <div class="panel" style="margin-bottom: 30px;">
+            <h3>Create New Milestone</h3>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
+                <input type="text" id="mName" placeholder="Milestone Name" style="flex: 2; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text-main);">
+                <input type="number" id="mPerc" placeholder="Initial %" min="0" max="100" style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: var(--input-bg); color: var(--text-main);">
+                <button onclick="addMilestone()" class="btn-primary" style="width: 150px;">Add</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Milestone Tracking</h3>
+            <div id="milestone-list-area">
+                <p style="text-align:center; color:gray;">Fetching your milestones...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="congratsModal" class="modal" style="display:none; position:fixed; z-index:1000; background:rgba(0,0,0,0.5); width:100%; height:100%; top:0; left:0; backdrop-filter: blur(5px);">
+        <div class="modal-content panel" style="position:relative; top: 25%; margin:auto; width: 350px; text-align: center; border: 2px solid #27ae60; background: var(--glass-panel-strong); padding:30px; border-radius:20px; color: var(--text-main);">
+            <i class="fas fa-trophy" style="font-size: 50px; color: #f1c40f; margin-bottom: 15px;"></i>
+            <h2 style="color:var(--sky-blue)">Well Done!</h2>
+            <p id="congratsMsg" style="margin: 15px 0; font-weight: 600;"></p>
+            <button class="btn-primary" onclick="closeCongrats()">Keep it up!</button>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span>Contact:</span>
+                <a class="footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+            </div>
+            <div class="footer-socials">
+                <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            <div class="footer-rights">All rights are reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = window.getApiBaseUrl();
+
+        // --- GATEKEEPER LOGIC (Standardized) ---
+        window.onload = function() {
+            const userData = localStorage.getItem('user_session'); // UNIFIED KEY
+            if (!userData) {
+                window.location.href = "login.html";
+                return;
+            }
+            displayMilestones();
+        };
+
+        async function addMilestone() {
+            const userData = localStorage.getItem('user_session');
+            if (!userData) return;
+            
+            const user = JSON.parse(userData);
+            const userId = user.id || user._id; // Bulletproof ID
+            const name = document.getElementById('mName').value;
+            const perc = document.getElementById('mPerc').value || 0;
+            
+            if(!name) {
+                Swal.fire('Error', 'Please enter a milestone name', 'error');
+                return;
+            }
+
+            const milestoneData = {
+                name: name,
+                progress: parseInt(perc),
+                celebrated: (parseInt(perc) >= 100),
+                userId: userId 
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/milestones/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(milestoneData)
+                });
+
+                if (response.ok) {
+                    document.getElementById('mName').value = "";
+                    document.getElementById('mPerc').value = "";
+                    displayMilestones();
+                    if(parseInt(perc) >= 100) triggerCongrats(name);
+                }
+            } catch (err) {
+                console.error("Save failed", err);
+            }
+        }
+
+        async function displayMilestones() {
+            const userData = localStorage.getItem('user_session');
+            if (!userData) return;
+
+            const user = JSON.parse(userData);
+            const userId = user.id || user._id;
+            const container = document.getElementById('milestone-list-area');
+
+            try {
+                const response = await fetch(`${API_URL}/milestones/user/${userId}`);
+                const milestones = await response.json();
+
+                if (!milestones || milestones.length === 0) {
+                    container.innerHTML = `<p style="text-align:center; color:gray; padding:20px;">No milestones found. Create one above!</p>`;
+                    return;
+                }
+
+                container.innerHTML = milestones.map(m => `
+                    <div class="milestone" style="margin-bottom: 25px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid var(--glass-border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="font-weight:bold; color: var(--text-main); font-size: 16px;">${m.name}</span>
+                            <div style="display:flex; gap:10px; align-items: center;">
+                                <input type="number" id="input-${m.id}" value="${m.progress}" style="width:60px; padding:6px; border-radius:8px; border:1px solid var(--glass-border); background:var(--input-bg); color:var(--text-main);" min="0" max="100">
+                                <button onclick="updateProgress('${m.id}', '${m.name}')" class="btn-sm" style="background:var(--sky-blue); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600;">Update</button>
+                                <button onclick="deleteMilestone('${m.id}')" style="background:none; border:none; color:#ff7675; cursor:pointer; font-size:18px;"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="progress-bar" style="background:rgba(255,255,255,0.1); height:12px; border-radius:10px; overflow:hidden;">
+                            <div class="fill" style="width: ${m.progress}%; height:100%; background:linear-gradient(90deg, var(--purple), var(--sky-blue)); transition: width 0.6s ease;"></div>
+                        </div>
+                        <div style="text-align: right; margin-top: 5px; font-size: 11px; color: var(--sky-blue); font-weight: bold;">${m.progress}% COMPLETE</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                container.innerHTML = `<p style="text-align:center; color:#ff7675;">Connection error to server.</p>`;
+            }
+        }
+
+        async function updateProgress(id, name) {
+            const userData = localStorage.getItem('user_session');
+            const user = JSON.parse(userData);
+            const newPerc = document.getElementById(`input-${id}`).value;
+            
+            const updateData = {
+                id: id,
+                name: name,
+                progress: parseInt(newPerc),
+                userId: user.id || user._id
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/milestones/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    displayMilestones();
+                    if(parseInt(newPerc) >= 100) triggerCongrats(name);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteMilestone(id) {
+            const result = await Swal.fire({
+                title: 'Remove Milestone?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff7675',
+                background: '#1a1a2e',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`${API_URL}/milestones/${id}`, { method: 'DELETE' });
+                    if (response.ok) displayMilestones();
+                } catch (err) { console.error(err); }
+            }
+        }
+
+        function triggerCongrats(name) {
+            document.getElementById('congratsMsg').innerText = `${name} has reached 100% Completion!`;
+            document.getElementById('congratsModal').style.display = 'block';
+        }
+
+        function closeCongrats() { 
+            document.getElementById('congratsModal').style.display = 'none'; 
+        }
+
+        function logoutUser() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>
