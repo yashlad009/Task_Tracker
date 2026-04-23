@@ -5,6 +5,15 @@
 .env.test.local
 .env.production.local
 .env.*
+!.env.example
+
+# Logs / runtime artifacts
+*.log
+*.tmp
+backend/demo/boot_*.txt
+backend/demo/run_*.log
+backend/demo/run_*.txt
+backend/demo/boot_*.log
 
 # Dependencies
 node_modules/
