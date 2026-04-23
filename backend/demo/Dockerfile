@@ -12,9 +12,6 @@ WORKDIR /app
 
 COPY --from=build /app/target/demo-0.0.1-SNAPSHOT.jar app.jar
 
-# Prefer IPv4 to avoid "Network is unreachable" when DNS returns IPv6
-ENV JAVA_TOOL_OPTIONS="-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false"
-
 ENV PORT=8080
 EXPOSE 8080
 
