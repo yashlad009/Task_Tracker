@@ -22,6 +22,15 @@ public class AuthController {
     // YOUR SECRET ADMIN KEY - Ensure this matches your frontend registration field
     private static final String SECRET_ADMIN_KEY = "YASH_ADMIN_777";
 
+    private Map<String, Object> toUserResponse(User user) {
+        return Map.of(
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "role", user.getRole(),
+                "tokens", user.getTokens()
+        );
+    }
+
     /**
      * 1. SEND OTP
      * Checks if user exists, then triggers the EmailService to send code.
@@ -75,7 +84,7 @@ public class AuthController {
             }
 
             User savedUser = userRepository.save(newUser);
-            return ResponseEntity.ok(savedUser);
+            return ResponseEntity.ok(toUserResponse(savedUser));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid or expired OTP."));
         }
@@ -95,7 +104,7 @@ public class AuthController {
         return userRepository.findByEmail(user.getEmail())
                 .map(dbUser -> {
                     if (dbUser.getPassword().equals(user.getPassword())) {
-                        return ResponseEntity.ok((Object) dbUser);
+                        return ResponseEntity.ok((Object) toUserResponse(dbUser));
                     }
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                             .body(Map.of("error", "Invalid email or password."));
