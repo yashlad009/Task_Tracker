@@ -1,47 +1,24 @@
 package com.example.demo;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import java.util.UUID;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * MongoDB version of the Task Entity.
- * Maps this class to the "tasks" collection in your NoSQL database.
+ * MongoDB task document.
  */
-@Entity
-@Table(name = "tasks")
+@Document(collection = "tasks")
 public class Task {
 
     @Id
     private String id;
 
-    @Column(nullable = false)
     private String text;
 
-    @Column(nullable = false)
-    private String status;
+    private String status = "Pending";
 
-    // Links to the User's String ID
-    @Column(name = "user_id", nullable = false)
     private String userId;
 
     public Task() {}
-
-    @PrePersist
-    public void ensureDefaults() {
-        if (id == null || id.isBlank()) {
-            id = UUID.randomUUID().toString();
-        }
-        if (status == null || status.isBlank()) {
-            status = "Pending";
-        }
-        if (category == null || category.isBlank()) {
-            category = "Personal";
-        }
-    }
 
     // Getters and Setters
     public String getId() {
@@ -76,8 +53,7 @@ public class Task {
         this.userId = userId;
     }
 
-    @Column(nullable = false)
-    private String category; // study, health, entertainment, work, etc.
+    private String category = "Personal"; // study, health, entertainment, work, etc.
 
     // Add Getter and Setter
     public String getCategory() { return category; }

@@ -1,53 +1,35 @@
 package com.example.demo;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapKeyColumn;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
- * Enhanced MongoDB User Entity with Role-Based Access Control (RBAC).
+ * MongoDB user document with role-based access control data.
  */
-@Entity
-@Table(name = "users")
+@Document(collection = "users")
 public class User {
 
     @Id
     private String id;
 
-    @Column(nullable = false, unique = true)
+    @Indexed(unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
     /**
      * The role field determines system privileges.
      * Values: "USER" or "ADMIN"
      */
-    private String role;
+    private String role = "USER";
     private int tokens = 0;
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_unlocked_rewards", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "reward_key")
     private List<String> unlockedRewards = new ArrayList<>();
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_reward_unlocked_dates", joinColumns = @JoinColumn(name = "user_id"))
-    @MapKeyColumn(name = "reward_key")
-    @Column(name = "unlocked_date")
     private Map<String, String> rewardUnlockedDates = new HashMap<>();
 
     public User() {}
@@ -90,16 +72,6 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    @PrePersist
-    public void ensureId() {
-        if (id == null || id.isBlank()) {
-            id = UUID.randomUUID().toString();
-        }
-        if (role == null || role.isBlank()) {
-            role = "USER";
-        }
     }
 
     public int getTokens() {

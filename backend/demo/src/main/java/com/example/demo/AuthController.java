@@ -17,7 +17,7 @@ public class AuthController {
     private UserRepository userRepository;
 
     @Autowired
-    private EmailService emailService;
+    private RegistrationOtpService registrationOtpService;
 
     // YOUR SECRET ADMIN KEY - Ensure this matches your frontend registration field
     private static final String SECRET_ADMIN_KEY = "YASH_ADMIN_777";
@@ -29,15 +29,21 @@ public class AuthController {
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendOtp(@RequestBody User user) {
         try {
+            if (user.getEmail() == null || user.getEmail().isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email is required."));
+            }
             if (userRepository.findByEmail(user.getEmail()).isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "User already exists!"));
             }
-            String otp = emailService.generateAndSaveOtp(user.getEmail());
-            emailService.sendOtpEmail(user.getEmail(), otp);
-            return ResponseEntity.ok(Map.of("message", "OTP Sent Successfully"));
+            String otp = registrationOtpService.generateAndSaveOtp(user.getEmail());
+            registrationOtpService.sendOtpEmail(user.getEmail(), otp);
+            return ResponseEntity.ok(Map.of(
+                    "message", "OTP sent successfully",
+                    "delivery", "email"
+            ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error sending email: " + e.getMessage()));
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -52,7 +58,7 @@ public class AuthController {
         String otp = data.get("otp");
         String providedAdminKey = data.get("adminKey");
 
-        if (emailService.verifyOtp(email, otp)) {
+        if (registrationOtpService.verifyOtp(email, otp)) {
             if (userRepository.findByEmail(email).isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "User already exists!"));
             }
@@ -81,11 +87,21 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
+        if (user.getEmail() == null || user.getEmail().isBlank()
+                || user.getPassword() == null || user.getPassword().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required."));
+        }
+
         return userRepository.findByEmail(user.getEmail())
-                .filter(dbUser -> dbUser.getPassword().equals(user.getPassword()))
-                .map(dbUser -> ResponseEntity.ok((Object) dbUser))
+                .map(dbUser -> {
+                    if (dbUser.getPassword().equals(user.getPassword())) {
+                        return ResponseEntity.ok((Object) dbUser);
+                    }
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(Map.of("error", "Invalid email or password."));
+                })
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Invalid email or password")));
+                        .body(Map.of("error", "Account not found.")));
     }
 
     /**

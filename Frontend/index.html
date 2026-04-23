@@ -12,8 +12,15 @@
             document.documentElement.setAttribute('data-theme', savedTheme);
         })();
     </script>
+    <script>
+        document.addEventListener('mousemove', function(e) {
+            document.body.style.setProperty('--mouse-x', (e.clientX / window.innerWidth) * 100 + '%');
+            document.body.style.setProperty('--mouse-y', (e.clientY / window.innerHeight) * 100 + '%');
+        });
+    </script>
     <script src="app-config.js"></script>
     <script src="theme.js" defer></script>
+    <script src="network-theme.js" defer></script>
     <style>
         .btn-sm { padding: 8px 14px; border-radius: 12px; cursor: pointer; color: white; font-weight: 700; }
         .user-avatar { cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.3s; }

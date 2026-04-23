@@ -11,10 +11,11 @@
 	<artifactId>demo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>demo</name>
-	<description>Demo project for Spring Boot with Supabase Postgres</description>
+	<description>Demo project for Spring Boot with MongoDB</description>
 
 	<properties>
 		<java.version>17</java.version>
+		<skipFrontendCopy>true</skipFrontendCopy>
 	</properties>
 
 	<dependencies>
@@ -25,13 +26,7 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
 
 		<dependency>
@@ -58,6 +53,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
+							<skip>${skipFrontendCopy}</skip>
 							<outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
 							<resources>
 								<resource>

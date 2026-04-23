@@ -1,41 +1,24 @@
 package com.example.demo;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import java.util.UUID;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * MongoDB Version of the Milestone Entity.
- * Maps this class to the "milestones" collection in your MongoDB database.
+ * MongoDB milestone document.
  */
-@Entity
-@Table(name = "milestones")
+@Document(collection = "milestones")
 public class Milestone {
 
     @Id
     private String id;
 
-    @Column(nullable = false)
     private String name;
     private int progress;
     private boolean celebrated;
 
-    // This connects the milestone to the User's String ID
-    @Column(name = "user_id", nullable = false)
     private String userId;
 
-    // Default constructor is mandatory for MongoDB mapping
     public Milestone() {}
-
-    @PrePersist
-    public void ensureId() {
-        if (id == null || id.isBlank()) {
-            id = UUID.randomUUID().toString();
-        }
-    }
 
     // Getters and Setters
     public String getId() {

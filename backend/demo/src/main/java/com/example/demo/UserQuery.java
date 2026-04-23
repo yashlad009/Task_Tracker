@@ -1,41 +1,24 @@
 package com.example.demo;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "user_queries")
+import java.time.LocalDateTime;
+
+@Document(collection = "user_queries")
 public class UserQuery {
     @Id
     private String id;
 
-    @Column(nullable = false)
     private String userEmail;
 
-    @Column(nullable = false, columnDefinition = "text")
     private String message;
 
-    @Column(columnDefinition = "text")
     private String adminReply; // Initially null
     private LocalDateTime timestamp;
     private boolean resolved;
 
     public UserQuery() { this.timestamp = LocalDateTime.now(); this.resolved = false; }
-
-    @PrePersist
-    public void ensureDefaults() {
-        if (id == null || id.isBlank()) {
-            id = UUID.randomUUID().toString();
-        }
-        if (timestamp == null) {
-            timestamp = LocalDateTime.now();
-        }
-    }
 
     // Getters and Setters
     public String getId() { return id; }

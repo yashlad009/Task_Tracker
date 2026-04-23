@@ -1,39 +1,24 @@
 package com.example.demo;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "important_tasks")
+import java.time.LocalDateTime;
+
+@Document(collection = "important_tasks")
 public class ImportantTask {
     @Id
     private String id;
 
-    @Column(nullable = false)
     private String taskName;
 
-    @Column(nullable = false)
     private LocalDateTime eventTime; // The time user picked
 
-    @Column(nullable = false)
     private String userEmail;
 
-    @Column(name = "user_id", nullable = false)
     private String userId;
 
     private boolean processed = false; // To ensure we don't send the email twice
-
-    @PrePersist
-    public void ensureId() {
-        if (id == null || id.isBlank()) {
-            id = UUID.randomUUID().toString();
-        }
-    }
 
     // Getters and Setters
     public String getId() { return id; }

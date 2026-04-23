@@ -12,52 +12,105 @@
     <script src="app-config.js"></script>
 </head>
 <body>
+<div class="page-shell">
+    <div class="background-orb orb-one"></div>
+    <div class="background-orb orb-two"></div>
+    <div class="background-orb orb-three"></div>
+    <div class="background-grid"></div>
+    <canvas id="networkCanvas" class="background-network" aria-hidden="true"></canvas>
 
-<div class="container">
-    <div id="loginSection" class="animate__animated animate__fadeIn">
-        <h2>Login</h2>
-        <form id="loginForm">
-            <input type="email" id="loginEmail" placeholder="Email" required>
-            <input type="password" id="loginPassword" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
-        <p class="toggle-link" onclick="toggleForms()">Don't have an account? Register</p>
-    </div>
-
-    <div id="registerSection" class="hidden animate__animated animate__fadeIn">
-        <h2>Register</h2>
-        <form id="registerForm">
-            <input type="email" id="regEmail" placeholder="Email" required>
-            <input type="password" id="regPassword" placeholder="Password" required>
-            
-            <div style="position: relative; margin-top: 10px;">
-                <input type="text" id="regAdminKey" placeholder="Admin Key (Optional)">
-                <small style="color: rgba(255,255,255,0.5); font-size: 10px; display: block; margin-top: -8px; margin-bottom: 10px;">Only required for Administrative access.</small>
+    <main class="auth-stage">
+        <section class="form-shell">
+            <div class="form-logo-wrap">
+                <img src="apms3.png" alt="APMS PRO logo" class="form-logo">
+            </div>
+            <div class="form-shell-header">
+                <span class="status-dot"></span>
+                <span class="status-copy">Secure access portal</span>
+            </div>
+            <div class="form-tabs">
+                <button type="button" class="tab-btn active" data-panel="login" onclick="setActivePanel('login')">Login</button>
+                <button type="button" class="tab-btn" data-panel="register" onclick="setActivePanel('register')">Register</button>
+                <button type="button" class="tab-btn" data-panel="about" onclick="setActivePanel('about')">About</button>
             </div>
 
-            <button type="submit">Register</button>
-        </form>
-        <p class="toggle-link" onclick="toggleForms()">Already have an account? Login</p>
-    </div>
-</div>
+            <div class="container">
+                <div id="loginSection" class="animate__animated animate__fadeIn">
+                    <p class="form-tag">Welcome back</p>
+                    <h2>Login</h2>
+                    <p class="form-subtitle">Enter your credentials to continue into your APMS dashboard.</p>
+                    <form id="loginForm">
+                        <input type="email" id="loginEmail" placeholder="Email" required>
+                        <input type="password" id="loginPassword" placeholder="Password" required>
+                        <button type="submit">Login</button>
+                    </form>
+                    <p class="toggle-link" onclick="setActivePanel('register')">Don't have an account? Register</p>
+                </div>
 
-<footer class="login-footer">
-    <div class="login-footer-content">
-        <div>
-            Contact:
-            <a class="login-footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+                <div id="registerSection" class="hidden animate__animated animate__fadeIn">
+                    <p class="form-tag">New here</p>
+                    <h2>Register</h2>
+                    <p class="form-subtitle">Create your workspace and verify your email with a one-time password.</p>
+                    <form id="registerForm">
+                        <input type="email" id="regEmail" placeholder="Email" required>
+                        <input type="password" id="regPassword" placeholder="Password" required>
+                        
+                        <div class="admin-key-group">
+                            <input type="text" id="regAdminKey" placeholder="Admin Key (Optional)">
+                            <small>Only required for administrative access.</small>
+                        </div>
+
+                        <button type="submit">Register</button>
+                    </form>
+                    <p class="toggle-link" onclick="setActivePanel('login')">Already have an account? Login</p>
+                </div>
+
+                <div id="aboutSection" class="hidden animate__animated animate__fadeIn">
+                    <p class="form-tag">About APMS Pro</p>
+                    <h2>Mission Control</h2>
+                    <p class="form-subtitle">A focused productivity system that blends planning, reminders, and AI guidance in one secure workspace.</p>
+                    <div class="about-cards">
+                        <article class="about-card">
+                            <span class="card-kicker">Focus Engine</span>
+                            <strong>Track tasks, milestones, and deadlines in a single mission feed.</strong>
+                        </article>
+                        <article class="about-card">
+                            <span class="card-kicker">AI Mentor</span>
+                            <strong>Get practical, context-aware next steps from your current workload.</strong>
+                        </article>
+                        <article class="about-card">
+                            <span class="card-kicker">Reminder Pulse</span>
+                            <strong>Use OTP onboarding and reminders so critical work never slips.</strong>
+                        </article>
+                    </div>
+                    <div class="about-metrics">
+                        <div><span class="metric-value">24/7</span><span class="metric-label">task visibility</span></div>
+                        <div><span class="metric-value">smart</span><span class="metric-label">mentor assistance</span></div>
+                        <div><span class="metric-value">live</span><span class="metric-label">email reminders</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="login-footer">
+        <div class="login-footer-content">
+            <div>
+                Contact:
+                <a class="login-footer-email" href="mailto:task_tracker_351@gmail.com">task_tracker_351</a>
+            </div>
+            <div class="login-footer-socials">
+                <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            <div class="login-footer-rights">All rights are reserved.</div>
         </div>
-        <div class="login-footer-socials">
-            <a href="https://github.com/yashlad009" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-                <i class="fab fa-github"></i>
-            </a>
-            <a href="https://www.linkedin.com/in/yash-lad-4bb46632a" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                <i class="fab fa-linkedin-in"></i>
-            </a>
-        </div>
-        <div class="login-footer-rights">All rights are reserved.</div>
-    </div>
-</footer>
+    </footer>
+</div>
 
 <script>
     const API_URL = `${window.getApiBaseUrl()}/auth`;
@@ -84,9 +137,20 @@
         });
     }
 
-    function toggleForms() {
-        document.getElementById('loginSection').classList.toggle('hidden');
-        document.getElementById('registerSection').classList.toggle('hidden');
+    function setActivePanel(panel) {
+        const sections = {
+            login: document.getElementById('loginSection'),
+            register: document.getElementById('registerSection'),
+            about: document.getElementById('aboutSection')
+        };
+
+        Object.entries(sections).forEach(([key, element]) => {
+            element.classList.toggle('hidden', key !== panel);
+        });
+
+        document.querySelectorAll('.tab-btn').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.panel === panel);
+        });
     }
 
     // --- REGISTRATION LOGIC ---
@@ -105,10 +169,16 @@
                 body: JSON.stringify({ email }) 
             });
 
+            const otpPayload = await otpRes.json().catch(() => ({}));
+
             if (otpRes.ok) {
+                const otpPromptText = otpPayload.delivery === 'debug'
+                    ? `Local OTP: ${otpPayload.otp}`
+                    : `Code sent to ${email}`;
+
                 const { value: otpCode } = await Swal.fire({
                     title: 'Verify Email',
-                    text: `Code sent to ${email}`,
+                    text: otpPromptText,
                     input: 'text',
                     inputPlaceholder: 'Enter OTP',
                     showCancelButton: true
@@ -123,13 +193,14 @@
 
                     if (finalRes.ok) {
                         showSuccess("Account Created Successfully!");
-                        toggleForms();
+                        setActivePanel('login');
                     } else {
-                        showError("Invalid OTP or registration failed.");
+                        const finalPayload = await finalRes.json().catch(() => ({}));
+                        showError(finalPayload.error || "Invalid OTP or registration failed.");
                     }
                 }
             } else {
-                showError("Could not send OTP. Check if email is valid.");
+                showError(otpPayload.error || "Could not send OTP. Check if email is valid.");
             }
         } catch (error) {
             showError("Backend connection failed. Ensure IntelliJ is running.");
@@ -149,8 +220,10 @@
                 body: JSON.stringify({ email, password })
             });
 
+            const payload = await response.json().catch(() => ({}));
+
             if (response.ok) {
-                const userData = await response.json();
+                const userData = payload;
                 
                 if (userData.role === "ADMIN") {
                     // Remove any old admin data, but LEAVE 'user_session' alone
@@ -169,7 +242,7 @@
                 }
 
             } else {
-                showError("Invalid email or password.");
+                showError(payload.error || "Invalid email or password.");
             }
         } catch (error) {
             showError("Server is offline.");
@@ -180,14 +253,182 @@
     document.addEventListener('mousemove', (e) => {
         const x = (e.clientX / window.innerWidth) * 100;
         const y = (e.clientY / window.innerHeight) * 100;
-        document.body.style.backgroundPosition = `${x}% ${y}%`;
+        document.body.style.setProperty('--mouse-x', `${x}%`);
+        document.body.style.setProperty('--mouse-y', `${y}%`);
     });
+
+    const networkCanvas = document.getElementById('networkCanvas');
+    const ctx = networkCanvas.getContext('2d');
+    const pointer = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5 };
+    const nodes = [];
+    const NODE_COUNT = 62;
+    const LINK_DISTANCE = 220;
+    const CURSOR_INFLUENCE = 170;
+    const STAR_CROSS_SIZE = 1.8;
+    const WAVE_SPEED = 0.0024;
+    const WAVE_LENGTH = 0.038;
+    const WAVE_MIN = 0.15;
+    const FLOW_SPEED = 0.0009;
+    const TWINKLE_SPEED = 0.0017;
+
+    function resizeNetwork() {
+        networkCanvas.width = window.innerWidth;
+        networkCanvas.height = window.innerHeight;
+    }
+
+    function seedNodes() {
+        nodes.length = 0;
+        for (let i = 0; i < NODE_COUNT; i += 1) {
+            nodes.push({
+                x: Math.random() * networkCanvas.width,
+                y: Math.random() * networkCanvas.height,
+                vx: (Math.random() - 0.5) * 0.24,
+                vy: (Math.random() - 0.5) * 0.24,
+                r: Math.random() * 1.6 + 1.1
+            });
+        }
+    }
+
+    function drawStarNode(node, glowBoost) {
+        const alpha = 0.42 + glowBoost * 0.58;
+        const glow = 8 + glowBoost * 18;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = '#bff7ff';
+        ctx.shadowColor = '#79e3ff';
+        ctx.shadowBlur = glow;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.r + glowBoost * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 0.9;
+        ctx.strokeStyle = `rgba(190, 244, 255, ${0.35 + glowBoost * 0.5})`;
+        ctx.beginPath();
+        ctx.moveTo(node.x - STAR_CROSS_SIZE, node.y);
+        ctx.lineTo(node.x + STAR_CROSS_SIZE, node.y);
+        ctx.moveTo(node.x, node.y - STAR_CROSS_SIZE);
+        ctx.lineTo(node.x, node.y + STAR_CROSS_SIZE);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function drawNebulaAura(time) {
+        const pulse = (Math.sin(time * 0.0012) + 1) * 0.5;
+        const coreRadius = 120 + pulse * 36;
+        const haloRadius = 280 + pulse * 70;
+        const grad = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, haloRadius);
+        grad.addColorStop(0, `rgba(124, 228, 255, ${0.12 + pulse * 0.08})`);
+        grad.addColorStop(0.35, 'rgba(77, 180, 255, 0.09)');
+        grad.addColorStop(0.75, 'rgba(33, 112, 182, 0.035)');
+        grad.addColorStop(1, 'rgba(10, 32, 56, 0)');
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(pointer.x, pointer.y, haloRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = `rgba(151, 236, 255, ${0.07 + pulse * 0.08})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(pointer.x, pointer.y, coreRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function drawEdgeTraveler(a, b, progress, intensity) {
+        const x = a.x + (b.x - a.x) * progress;
+        const y = a.y + (b.y - a.y) * progress;
+        ctx.save();
+        ctx.globalAlpha = 0.25 + intensity * 0.5;
+        ctx.fillStyle = '#d7fbff';
+        ctx.shadowColor = 'rgba(161, 240, 255, 0.9)';
+        ctx.shadowBlur = 8 + intensity * 16;
+        ctx.beginPath();
+        ctx.arc(x, y, 1 + intensity * 1.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function animateNetwork(time = 0) {
+        ctx.clearRect(0, 0, networkCanvas.width, networkCanvas.height);
+        drawNebulaAura(time);
+
+        for (const node of nodes) {
+            node.x += node.vx;
+            node.y += node.vy;
+
+            if (node.x < 0 || node.x > networkCanvas.width) node.vx *= -1;
+            if (node.y < 0 || node.y > networkCanvas.height) node.vy *= -1;
+        }
+
+        for (let i = 0; i < nodes.length; i += 1) {
+            const a = nodes[i];
+            const dPointerA = Math.hypot(a.x - pointer.x, a.y - pointer.y);
+            const glowA = Math.max(0, 1 - dPointerA / CURSOR_INFLUENCE);
+
+            for (let j = i + 1; j < nodes.length; j += 1) {
+                const b = nodes[j];
+                const dist = Math.hypot(a.x - b.x, a.y - b.y);
+                if (dist > LINK_DISTANCE) continue;
+
+                const dPointerB = Math.hypot(b.x - pointer.x, b.y - pointer.y);
+                const glowB = Math.max(0, 1 - dPointerB / CURSOR_INFLUENCE);
+                const cursorGlow = Math.max(glowA, glowB);
+                const baseAlpha = 0.05 + (1 - dist / LINK_DISTANCE) * 0.18;
+                const wavePhase = (time * WAVE_SPEED) - (dist * WAVE_LENGTH) + ((i * 0.41) + (j * 0.63));
+                const wave = (Math.sin(wavePhase) + 1) * 0.5;
+                const waveGlow = WAVE_MIN + wave * (1 - WAVE_MIN);
+                const activeAlpha = baseAlpha + cursorGlow * 0.35 + waveGlow * 0.2;
+                const edgeWidth = 0.55 + cursorGlow * 1.35 + waveGlow * 0.45;
+                const flowOffset = ((i * 0.09) + (j * 0.17)) % 1;
+                const travelerProgress = (time * FLOW_SPEED + flowOffset) % 1;
+
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.lineWidth = edgeWidth;
+                ctx.strokeStyle = `rgba(137, 232, 255, ${activeAlpha})`;
+                ctx.shadowColor = 'rgba(123, 225, 255, 0.8)';
+                ctx.shadowBlur = 2 + cursorGlow * 10 + waveGlow * 8;
+                ctx.stroke();
+
+                // A guided pulse particle travels along selected edges for a majestic "energy flow".
+                if (((i + j) % 5 === 0) && dist < LINK_DISTANCE * 0.78) {
+                    drawEdgeTraveler(a, b, travelerProgress, (cursorGlow * 0.7) + (waveGlow * 0.5));
+                }
+            }
+        }
+
+        for (const node of nodes) {
+            const dPointer = Math.hypot(node.x - pointer.x, node.y - pointer.y);
+            const glow = Math.max(0, 1 - dPointer / CURSOR_INFLUENCE);
+            const twinkle = (Math.sin((time * TWINKLE_SPEED) + (node.x * 0.02) + (node.y * 0.017)) + 1) * 0.5;
+            const finalGlow = Math.min(1, glow + twinkle * 0.28);
+            drawStarNode(node, finalGlow);
+        }
+
+        requestAnimationFrame(animateNetwork);
+    }
+
+    window.addEventListener('resize', () => {
+        resizeNetwork();
+        seedNodes();
+    });
+
+    window.addEventListener('mousemove', (event) => {
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+    });
+
+    resizeNetwork();
+    seedNodes();
+    animateNetwork();
 </script>
 
 <style>
     /* CSS Helpers for Toggle */
     .hidden { display: none !important; }
-    .toggle-link { cursor: pointer; color: var(--sky-blue); margin-top: 15px; font-size: 14px; text-decoration: underline; }
 </style>
 
 </body>
