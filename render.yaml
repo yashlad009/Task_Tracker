@@ -3,8 +3,9 @@ services:
     name: tasktracker-apms
     runtime: docker
     plan: free
-    rootDir: backend/demo
-    healthCheckPath: /
+    dockerfilePath: backend/demo/Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -25,4 +26,4 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_API_URL
-        value: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+        value: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
