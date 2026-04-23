@@ -21,12 +21,12 @@ public class AnalyticsController {
 
     /**
      * Fetch user-specific stats for the Analytics Dashboard.
-     * Changed @PathVariable to String to match MongoDB ID types.
+     * Uses String identifiers across the API contract.
      */
     @GetMapping("/user/{userId}")
     public Map<String, Object> getUserStats(@PathVariable String userId) {
 
-        // 1. Fetch counts from TaskRepository (Must be the MongoRepository version)
+        // 1. Fetch counts from TaskRepository
         long completed = taskRepository.countByUserIdAndStatus(userId, "Completed");
         long pending = taskRepository.countByUserIdAndStatus(userId, "Pending");
         long total = taskRepository.countByUserId(userId);

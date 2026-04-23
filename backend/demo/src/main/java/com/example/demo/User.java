@@ -1,35 +1,60 @@
 package com.example.demo;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
- * MongoDB user document with role-based access control data.
+ * User entity with role-based access control data.
  */
-@Document(collection = "users")
+@Entity
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_users_email", columnNames = "email")
+})
 public class User {
 
     @Id
+    @Column(name = "id", nullable = false, updatable = false)
     private String id;
 
-    @Indexed(unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "password", nullable = false)
     private String password;
 
     /**
      * The role field determines system privileges.
      * Values: "USER" or "ADMIN"
      */
+    @Column(name = "role", nullable = false)
     private String role = "USER";
+
+    @Column(name = "tokens", nullable = false)
     private int tokens = 0;
+
+    @ElementCollection
+    @CollectionTable(name = "user_unlocked_rewards", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "reward_key")
     private List<String> unlockedRewards = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "user_reward_unlock_dates", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "reward_key")
+    @Column(name = "unlocked_date")
     private Map<String, String> rewardUnlockedDates = new HashMap<>();
 
     public User() {}
@@ -42,6 +67,13 @@ public class User {
     }
 
     // Getters and Setters
+    @PrePersist
+    public void ensureId() {
+        if (this.id == null || this.id.isBlank()) {
+            this.id = UUID.randomUUID().toString();
+        }
+    }
+
     public String getId() {
         return id;
     }

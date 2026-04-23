@@ -9,11 +9,15 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: DATABASE_USERNAME
-        value: postgres
+        sync: false
       - key: DATABASE_PASSWORD
         sync: false
       - key: HIBERNATE_DDL_AUTO
         value: update
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
       - key: MAIL_USERNAME
         sync: false
       - key: MAIL_PASSWORD

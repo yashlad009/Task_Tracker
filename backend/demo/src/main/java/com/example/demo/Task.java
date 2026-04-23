@@ -1,26 +1,43 @@
 package com.example.demo;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+
+import java.util.UUID;
 
 /**
- * MongoDB task document.
+ * Task entity.
  */
-@Document(collection = "tasks")
+@Entity
+@Table(name = "tasks")
 public class Task {
 
     @Id
+    @Column(name = "id", nullable = false, updatable = false)
     private String id;
 
+    @Column(name = "text", nullable = false)
     private String text;
 
+    @Column(name = "status", nullable = false)
     private String status = "Pending";
 
+    @Column(name = "user_id", nullable = false)
     private String userId;
 
     public Task() {}
 
     // Getters and Setters
+    @PrePersist
+    public void ensureId() {
+        if (this.id == null || this.id.isBlank()) {
+            this.id = UUID.randomUUID().toString();
+        }
+    }
+
     public String getId() {
         return id;
     }
@@ -53,6 +70,7 @@ public class Task {
         this.userId = userId;
     }
 
+    @Column(name = "category", nullable = false)
     private String category = "Personal"; // study, health, entertainment, work, etc.
 
     // Add Getter and Setter

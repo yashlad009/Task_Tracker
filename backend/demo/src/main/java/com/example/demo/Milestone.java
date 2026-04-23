@@ -1,26 +1,46 @@
 package com.example.demo;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+
+import java.util.UUID;
 
 /**
- * MongoDB milestone document.
+ * Milestone entity.
  */
-@Document(collection = "milestones")
+@Entity
+@Table(name = "milestones")
 public class Milestone {
 
     @Id
+    @Column(name = "id", nullable = false, updatable = false)
     private String id;
 
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "progress", nullable = false)
     private int progress;
+
+    @Column(name = "celebrated", nullable = false)
     private boolean celebrated;
 
+    @Column(name = "user_id", nullable = false)
     private String userId;
 
     public Milestone() {}
 
     // Getters and Setters
+    @PrePersist
+    public void ensureId() {
+        if (this.id == null || this.id.isBlank()) {
+            this.id = UUID.randomUUID().toString();
+        }
+    }
+
     public String getId() {
         return id;
     }

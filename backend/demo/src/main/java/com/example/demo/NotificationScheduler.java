@@ -24,7 +24,7 @@ public class NotificationScheduler {
 
     @Scheduled(fixedRate = 30000) // Runs every 30 seconds
     public void checkAndNotify() {
-        // 1. Get current time in UTC (Matching your MongoDB)
+        // 1. Get current time in UTC
         LocalDateTime nowUtc = LocalDateTime.now(ZoneId.of("UTC"));
 
         // 2. Wide window to catch the task even with small lag
@@ -66,10 +66,10 @@ public class NotificationScheduler {
                             formattedTimeIST
                     );
 
-                    // 4. Mark as processed and save to MongoDB
+                    // 4. Mark as processed and save
                     task.setProcessed(true);
                     repository.save(task);
-                    System.out.println("✅ SUCCESS: Task marked as processed in MongoDB.");
+                    System.out.println("✅ SUCCESS: Task marked as processed in database.");
 
                 } catch (Exception e) {
                     System.err.println("❌ MAIL ERROR: " + e.getMessage());

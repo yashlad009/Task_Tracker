@@ -1,26 +1,49 @@
 package com.example.demo;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-@Document(collection = "user_queries")
+@Entity
+@Table(name = "user_queries")
 public class UserQuery {
     @Id
+    @Column(name = "id", nullable = false, updatable = false)
     private String id;
 
+    @Column(name = "user_email", nullable = false)
     private String userEmail;
 
+    @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
 
+    @Column(name = "admin_reply", columnDefinition = "TEXT")
     private String adminReply; // Initially null
+
+    @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp;
+
+    @Column(name = "resolved", nullable = false)
     private boolean resolved;
 
     public UserQuery() { this.timestamp = LocalDateTime.now(); this.resolved = false; }
 
     // Getters and Setters
+    @PrePersist
+    public void ensureDefaults() {
+        if (this.id == null || this.id.isBlank()) {
+            this.id = UUID.randomUUID().toString();
+        }
+        if (this.timestamp == null) {
+            this.timestamp = LocalDateTime.now();
+        }
+    }
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getUserEmail() { return userEmail; }

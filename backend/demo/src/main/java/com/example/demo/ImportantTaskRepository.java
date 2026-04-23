@@ -1,9 +1,10 @@
 package com.example.demo;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 
-public interface ImportantTaskRepository extends MongoRepository<ImportantTask, String> {
+public interface ImportantTaskRepository extends JpaRepository<ImportantTask, String> {
     List<ImportantTask> findByUserId(String userId);
-    List<ImportantTask> findByProcessedFalse(); // We only care about tasks not yet emailed
+    List<ImportantTask> findByProcessedFalse();
 }

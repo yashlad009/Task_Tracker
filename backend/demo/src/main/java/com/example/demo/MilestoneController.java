@@ -15,7 +15,7 @@ public class MilestoneController {
 
     /**
      * ADD / UPDATE: Saves a milestone.
-     * If the JSON includes an "id", MongoDB updates the existing record.
+     * If the JSON includes an "id", it updates the existing record.
      */
     @PostMapping("/add")
     public Milestone addMilestone(@RequestBody Milestone milestone) {
@@ -41,7 +41,7 @@ public class MilestoneController {
     }
 
     /**
-     * DELETE: Removes a milestone by its unique MongoDB String ID.
+     * DELETE: Removes a milestone by its unique String ID.
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMilestone(@PathVariable String id) {

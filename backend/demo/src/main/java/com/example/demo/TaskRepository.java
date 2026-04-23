@@ -1,12 +1,10 @@
 package com.example.demo;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 
-/**
- * MongoDB repository for task operations.
- */
-public interface TaskRepository extends MongoRepository<Task, String> {
+public interface TaskRepository extends JpaRepository<Task, String> {
 
     // Used to fetch all tasks for a specific user on the Dashboard
     List<Task> findByUserId(String userId);
