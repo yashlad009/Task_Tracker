@@ -1,11 +1,9 @@
 services:
   - type: web
     name: tasktracker-apms
-    env: java
+    runtime: docker
     plan: free
     rootDir: backend/demo
-    buildCommand: chmod +x mvnw && ./mvnw clean package -DskipTests
-    startCommand: java -jar target/demo-0.0.1-SNAPSHOT.jar
     healthCheckPath: /
     envVars:
       - key: DATABASE_URL
