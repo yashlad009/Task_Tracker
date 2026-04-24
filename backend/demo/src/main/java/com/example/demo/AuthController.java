@@ -20,6 +20,9 @@ public class AuthController {
     @Autowired
     private RegistrationOtpService registrationOtpService;
 
+    @Autowired
+    private PasswordService passwordService;
+
     // YOUR SECRET ADMIN KEY - Ensure this matches your frontend registration field
     private static final String SECRET_ADMIN_KEY = "YASH_ADMIN_777";
 
@@ -59,6 +62,10 @@ public class AuthController {
         String otp = data.get("otp");
         String providedAdminKey = data.get("adminKey");
 
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required."));
+        }
+
         if (registrationOtpService.verifyOtp(email, otp)) {
             if (userRepository.findByEmail(email).isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "User already exists!"));
@@ -66,7 +73,7 @@ public class AuthController {
 
             User newUser = new User();
             newUser.setEmail(email);
-            newUser.setPassword(password);
+            newUser.setPassword(passwordService.hash(password));
 
             // ROLE-BASED ACCESS CONTROL (RBAC) LOGIC
             if (providedAdminKey != null && providedAdminKey.equals(SECRET_ADMIN_KEY)) {
@@ -95,7 +102,11 @@ public class AuthController {
 
         return userRepository.findByEmail(user.getEmail())
                 .map(dbUser -> {
-                    if (dbUser.getPassword().equals(user.getPassword())) {
+                    if (passwordService.matches(user.getPassword(), dbUser.getPassword())) {
+                        if (passwordService.needsUpgrade(dbUser.getPassword())) {
+                            dbUser.setPassword(passwordService.hash(user.getPassword()));
+                            userRepository.save(dbUser);
+                        }
                         return ResponseEntity.ok((Object) UserResponseMapper.toUserResponse(dbUser));
                     }
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -122,9 +133,14 @@ public class AuthController {
      */
     @PutMapping("/update")
     public ResponseEntity<?> updateUser(@RequestBody User updatedUser) {
+        if (updatedUser.getEmail() == null || updatedUser.getEmail().isBlank()
+                || updatedUser.getPassword() == null || updatedUser.getPassword().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required."));
+        }
+
         return userRepository.findByEmail(updatedUser.getEmail())
                 .map(user -> {
-                    user.setPassword(updatedUser.getPassword());
+                    user.setPassword(passwordService.hash(updatedUser.getPassword()));
                     userRepository.save(user);
                     return ResponseEntity.ok((Object) Map.of("message", "Profile updated!"));
                 })
