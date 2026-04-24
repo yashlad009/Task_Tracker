@@ -183,11 +183,14 @@
 
         async function sendMessage() {
             const inputField = document.getElementById('chat-input');
+            const sendButton = document.querySelector('.chat-input-area button');
             const message = inputField.value.trim();
             if (!message) return;
 
             // Clear input
             inputField.value = '';
+            inputField.disabled = true;
+            sendButton.disabled = true;
 
             // Add user message
             addMessageToChat(message, 'user');
@@ -204,16 +207,22 @@
                 });
 
                 removeTypingIndicator(typingIndicatorId);
+                inputField.disabled = false;
+                sendButton.disabled = false;
+                inputField.focus();
 
+                const data = await response.json().catch(() => ({}));
                 if (response.ok) {
-                    const data = await response.json();
-                    addMessageToChat(data.response, 'ai');
+                    addMessageToChat(data.response || "I couldn't generate a response just now. Please try again.", 'ai');
                 } else {
-                    addMessageToChat("Sorry, I encountered an error. Please try again.", 'ai');
+                    addMessageToChat(data.response || data.error || "Sorry, I encountered an error. Please try again.", 'ai');
                 }
             } catch (err) {
                 removeTypingIndicator(typingIndicatorId);
-                addMessageToChat("Could not connect to the backend.", 'ai');
+                inputField.disabled = false;
+                sendButton.disabled = false;
+                inputField.focus();
+                addMessageToChat("Could not connect to the AI Mentor service right now. Please try again in a moment.", 'ai');
             }
         }
 

@@ -418,6 +418,15 @@
     <script>
         const API_URL = window.getApiBaseUrl();
         let currentCertificate = null;
+        let currentUserSession = null;
+        let achievementLookup = {};
+        const categoryTokenValues = {
+            Study: 10,
+            Health: 8,
+            Work: 12,
+            Personal: 6,
+            Entertainment: 6
+        };
 
         const categoryColors = {
             'Study': '#9d50bb', 
@@ -435,6 +444,7 @@
 
             try {
                 setupUserProfile(user);
+                currentUserSession = user;
                 const uid = user.id || user._id; 
                 loadDashboardTasks(uid);
                 loadDashboardMilestones(uid);
@@ -516,11 +526,13 @@
                 const user = data.user || storedUser;
                 if (data.user) {
                     localStorage.setItem('user_session', JSON.stringify(data.user));
+                    currentUserSession = data.user;
                     setupUserProfile(data.user);
                 }
                 const userId = user.id || user._id;
                 loadDashboardTasks(userId);
                 loadRewards(userId);
+                loadDashboardMilestones(userId);
 
                 if (data.newlyUnlocked && data.newlyUnlocked.length > 0) {
                     showCertificate(data.newlyUnlocked[data.newlyUnlocked.length - 1], user);
@@ -577,8 +589,9 @@
                 const analytics = await response.json();
                 const gamification = analytics.gamification || {};
                 const achievements = gamification.achievements || [];
-                const categoryTokens = gamification.categoryTokens || categoryColors;
+                const categoryTokens = gamification.categoryTokens || categoryTokenValues;
                 const nextReward = gamification.nextReward;
+                const hasGamificationData = Object.keys(gamification).length > 0;
 
                 document.getElementById('rewardTokenCount').innerText = gamification.tokens || 0;
                 document.getElementById('rewardLevelLabel').innerText = `Level ${gamification.level || 1}`;
@@ -589,17 +602,28 @@
                 if (nextReward) {
                     document.getElementById('rewardNextBadge').innerText = `Next: ${nextReward.name.split(' ')[0]}`;
                     document.getElementById('rewardNextLabel').innerText = `${nextReward.icon} ${nextReward.name} unlocks at ${nextReward.threshold} tokens.`;
-                } else {
+                } else if (hasGamificationData && achievements.length > 0) {
                     document.getElementById('rewardNextBadge').innerText = 'All Rewards Unlocked';
                     document.getElementById('rewardNextLabel').innerText = 'You have reached the highest reward tier. Keep building your lead.';
+                } else {
+                    document.getElementById('rewardNextBadge').innerText = 'Next: Bronze';
+                    document.getElementById('rewardNextLabel').innerText = 'Complete tasks to unlock your first certificate at 100 tokens.';
                 }
 
-                document.getElementById('achievementGrid').innerHTML = achievements.map(reward => `
-                    <div class="achievement-card ${reward.unlocked ? '' : 'locked'}">
+                const displayAchievements = achievements.length > 0 ? achievements : [
+                    { icon: '🥉', name: 'Bronze Certificate', threshold: 100, unlocked: false },
+                    { icon: '🥈', name: 'Silver Certificate', threshold: 200, unlocked: false },
+                    { icon: '🥇', name: 'Gold Certificate', threshold: 500, unlocked: false },
+                    { icon: '🔥', name: 'Elite Badge', threshold: 1000, unlocked: false }
+                ];
+                achievementLookup = Object.fromEntries(displayAchievements.map((reward) => [reward.key || reward.name, reward]));
+
+                document.getElementById('achievementGrid').innerHTML = displayAchievements.map(reward => `
+                    <div class="achievement-card ${reward.unlocked ? '' : 'locked'}" ${reward.unlocked ? `role="button" tabindex="0" onclick="openAchievementCertificate('${reward.key || reward.name}')"` : ''}>
                         <div style="font-size:24px;">${reward.icon}</div>
                         <strong>${reward.name}</strong>
                         <div style="color:var(--text-dim); font-size:12px; margin-top:6px;">
-                            ${reward.unlocked ? `Unlocked ${reward.unlockedDate || ''}` : `${reward.threshold} tokens required`}
+                            ${reward.unlocked ? `Unlocked ${reward.unlockedDate || ''}<br><span style="color:var(--sky-blue);">View certificate</span>` : `${reward.threshold} tokens required`}
                         </div>
                     </div>
                 `).join('');
@@ -613,6 +637,14 @@
             } catch (error) {
                 document.getElementById('achievementGrid').innerHTML = `<p style="color:var(--text-soft);">Rewards are offline until the backend responds.</p>`;
             }
+        }
+
+        function openAchievementCertificate(rewardKey) {
+            const reward = achievementLookup[rewardKey];
+            if (!reward || !reward.unlocked) return;
+            const user = currentUserSession || window.requireUserSession();
+            if (!user) return;
+            showCertificate(reward, user);
         }
 
         function toggleProfile() {
