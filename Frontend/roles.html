@@ -141,13 +141,10 @@
 
         // --- GATEKEEPER LOGIC ---
         window.onload = function() {
-            const userData = localStorage.getItem('user_session'); // UNIFIED KEY
-            if (!userData) {
-                window.location.href = "login.html";
+            const user = window.requireUserSession();
+            if (!user) {
                 return;
             }
-            
-            const user = JSON.parse(userData);
             // Dynamically update the role table
             document.getElementById('userNameDisplay').innerText = user.email.split('@')[0];
             document.getElementById('userRoleDisplay').innerText = user.role || "Standard User";
@@ -156,7 +153,6 @@
         };
 
         async function sendMessage() {
-            const userData = localStorage.getItem('user_session');
             const msgInput = document.getElementById('supportMsg');
             const msg = msgInput.value.trim();
 
@@ -165,12 +161,10 @@
                 return;
             }
 
-            if (!userData) {
-                window.location.href = "login.html";
+            const user = window.requireUserSession();
+            if (!user) {
                 return;
             }
-
-            const user = JSON.parse(userData);
 
             try {
                 const response = await fetch(`${API_URL}/queries/send`, {
@@ -196,10 +190,8 @@
         }
 
         async function loadMyReplies() {
-            const userData = localStorage.getItem('user_session');
-            if (!userData) return;
-            
-            const user = JSON.parse(userData);
+            const user = window.requireUserSession();
+            if (!user) return;
             try {
                 const res = await fetch(`${API_URL}/queries/my-queries/${user.email}`);
                 const data = await res.json();
@@ -227,8 +219,7 @@
         }
 
         function logoutUser() {
-            localStorage.clear();
-            window.location.href = "login.html";
+            window.redirectToLogin();
         }
     </script>
 </body>

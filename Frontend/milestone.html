@@ -97,19 +97,16 @@
 
         // --- GATEKEEPER LOGIC (Standardized) ---
         window.onload = function() {
-            const userData = localStorage.getItem('user_session'); // UNIFIED KEY
-            if (!userData) {
-                window.location.href = "login.html";
+            const user = window.requireUserSession();
+            if (!user) {
                 return;
             }
             displayMilestones();
         };
 
         async function addMilestone() {
-            const userData = localStorage.getItem('user_session');
-            if (!userData) return;
-            
-            const user = JSON.parse(userData);
+            const user = window.requireUserSession();
+            if (!user) return;
             const userId = user.id || user._id; // Bulletproof ID
             const name = document.getElementById('mName').value;
             const perc = document.getElementById('mPerc').value || 0;
@@ -145,10 +142,8 @@
         }
 
         async function displayMilestones() {
-            const userData = localStorage.getItem('user_session');
-            if (!userData) return;
-
-            const user = JSON.parse(userData);
+            const user = window.requireUserSession();
+            if (!user) return;
             const userId = user.id || user._id;
             const container = document.getElementById('milestone-list-area');
 
@@ -183,8 +178,8 @@
         }
 
         async function updateProgress(id, name) {
-            const userData = localStorage.getItem('user_session');
-            const user = JSON.parse(userData);
+            const user = window.requireUserSession();
+            if (!user) return;
             const newPerc = document.getElementById(`input-${id}`).value;
             
             const updateData = {
@@ -236,8 +231,7 @@
         }
 
         function logoutUser() {
-            localStorage.clear();
-            window.location.href = "login.html";
+            window.redirectToLogin();
         }
     </script>
 </body>

@@ -193,14 +193,10 @@
         let cachedMilestones = [];
 
         window.onload = function() {
-            // --- SYNCED SESSION KEY ---
-            const userData = localStorage.getItem('user_session'); 
-            if (!userData) {
-                window.location.href = "login.html";
+            const user = window.requireUserSession();
+            if (!user) {
                 return;
             }
-            
-            const user = JSON.parse(userData);
             const userId = user.id || user._id; // Bulletproof ID mapping
             loadData(userId);
         };
@@ -279,8 +275,7 @@
         }
 
         function logoutUser() {
-            localStorage.clear();
-            window.location.href = "login.html";
+            window.redirectToLogin();
         }
     </script>
 </body>

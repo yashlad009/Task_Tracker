@@ -116,16 +116,18 @@
         const API_URL = window.getApiBaseUrl();
 
         window.onload = function() {
-            const userData = localStorage.getItem('user_session');
-            if (!userData) {
-                window.location.href = "login.html";
+            const user = window.requireUserSession();
+            if (!user) {
                 return;
             }
             loadImportantTasks();
         };
 
         async function scheduleImportantTask() {
-            const userData = JSON.parse(localStorage.getItem('user_session'));
+            const userData = window.requireUserSession();
+            if (!userData) {
+                return;
+            }
             const taskName = document.getElementById('impTaskName').value;
             const taskTimeLocal = document.getElementById('impTaskTime').value;
 
@@ -170,7 +172,10 @@
         }
 
         async function loadImportantTasks() {
-            const user = JSON.parse(localStorage.getItem('user_session'));
+            const user = window.requireUserSession();
+            if (!user) {
+                return;
+            }
             const userId = user.id || user._id;
             const tableBody = document.getElementById('important-task-list');
 

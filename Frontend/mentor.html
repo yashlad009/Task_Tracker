@@ -139,19 +139,16 @@
         let currentUser = null;
 
         window.onload = function() {
-            const userData = localStorage.getItem('user_session'); 
-            
-            if (!userData) {
-                window.location.href = "login.html";
+            const sessionUser = window.requireUserSession();
+            if (!sessionUser) {
                 return;
             }
 
             try {
-                currentUser = JSON.parse(userData);
+                currentUser = sessionUser;
                 setupUserProfile(currentUser);
             } catch (e) {
-                localStorage.clear();
-                window.location.href = "login.html";
+                window.redirectToLogin();
             }
 
             window.onclick = function(event) {
@@ -175,8 +172,7 @@
         }
 
         function logoutUser() {
-            localStorage.clear();
-            window.location.href = "login.html";
+            window.redirectToLogin();
         }
 
         function handleKeyPress(e) {

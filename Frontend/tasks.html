@@ -176,9 +176,8 @@
 
     // --- GATEKEEPER LOGIC (BREAKS THE LOOP) ---
     window.onload = function() {
-        const userData = localStorage.getItem('user_session'); // UNIFIED KEY
-        if (!userData) { 
-            window.location.href = "login.html"; 
+        const user = window.requireUserSession();
+        if (!user) { 
             return; 
         }
         displayTasks();
@@ -192,10 +191,8 @@
     }
 
     async function displayTasks() {
-        const userData = localStorage.getItem('user_session');
-        if (!userData) return;
-        
-        const user = JSON.parse(userData);
+        const user = window.requireUserSession();
+        if (!user) return;
         const userId = user.id || user._id; // Bulletproof ID
         const table = document.getElementById('planning-list');
 
@@ -232,10 +229,9 @@
 
     async function addTask() {
         const val = document.getElementById('taskInput').value;
-        const userData = localStorage.getItem('user_session');
-        if (!userData || !val) return;
+        const user = window.requireUserSession();
+        if (!user || !val) return;
 
-        const user = JSON.parse(userData);
         const userId = user.id || user._id;
 
         const taskData = {

@@ -428,27 +428,20 @@
         };
 
         window.onload = function() {
-            // --- SYNCED KEY: Looking for 'user_session' to match login.html ---
-            const userData = localStorage.getItem('user_session'); 
-            
-            if (!userData) {
-                console.warn("Session missing. Redirecting to login...");
-                window.location.href = "login.html";
+            const user = window.requireUserSession();
+            if (!user) {
                 return;
             }
 
             try {
-                const user = JSON.parse(userData);
                 setupUserProfile(user);
-                // Handle both MongoDB 'id' and '_id' formats
                 const uid = user.id || user._id; 
                 loadDashboardTasks(uid);
                 loadDashboardMilestones(uid);
                 loadRewards(uid);
             } catch (e) {
                 console.error("Session corrupted. Clearing data.");
-                localStorage.clear();
-                window.location.href = "login.html";
+                window.redirectToLogin();
             }
 
             window.onclick = function(event) {
@@ -516,7 +509,10 @@
             const response = await fetch(`${API_URL}/tasks/${taskId}/complete`, { method: 'PUT' });
             if (response.ok) {
                 const data = await response.json();
-                const storedUser = JSON.parse(localStorage.getItem('user_session'));
+                const storedUser = window.requireUserSession();
+                if (!storedUser) {
+                    return;
+                }
                 const user = data.user || storedUser;
                 if (data.user) {
                     localStorage.setItem('user_session', JSON.stringify(data.user));
@@ -546,7 +542,10 @@
         async function deleteTask(taskId) {
             const response = await fetch(`${API_URL}/tasks/${taskId}`, { method: 'DELETE' });
             if (response.ok) {
-                const user = JSON.parse(localStorage.getItem('user_session'));
+                const user = window.requireUserSession();
+                if (!user) {
+                    return;
+                }
                 loadDashboardTasks(user.id || user._id);
             }
         }
@@ -622,8 +621,7 @@
         }
 
         function logoutUser() {
-            localStorage.clear();
-            window.location.href = "login.html";
+            window.redirectToLogin();
         }
 
         function showCertificate(reward, user) {
@@ -641,7 +639,7 @@
 
         function downloadCertificate() {
             if (!currentCertificate) return;
-            const user = JSON.parse(localStorage.getItem('user_session') || '{}');
+            const user = window.requireUserSession() || {};
             const printWindow = window.open('', '_blank', 'width=900,height=700');
             if (!printWindow) return;
 

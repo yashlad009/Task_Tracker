@@ -125,11 +125,10 @@
         let userMap = {}; 
 
         window.onload = async function() {
-            const adminData = localStorage.getItem('admin_session');
-            if (!adminData) { window.location.href = "login.html"; return; }
-            
-            const admin = JSON.parse(adminData);
-            if (admin.role !== "ADMIN") { window.location.href = "index.html"; return; }
+            const admin = window.requireAdminSession();
+            if (!admin) {
+                return;
+            }
             
             await loadAllData();
             // Start by showing the Users panel
@@ -280,8 +279,7 @@
         }
 
         function logoutAdmin() {
-            localStorage.removeItem('admin_session');
-            window.location.href = "login.html";
+            window.redirectToLogin();
         }
     </script>
 </body>
