@@ -52,7 +52,7 @@ public class TaskController {
                 response.put("tokensAwarded", 0);
                 userRepository.findById(task.getUserId()).ifPresent(user -> {
                     gamificationService.ensureInitialized(user);
-                    response.put("user", user);
+                    response.put("user", UserResponseMapper.toUserResponse(user));
                     response.put("gamification", gamificationService.buildGamificationSummary(user));
                 });
                 response.put("newlyUnlocked", List.of());
@@ -68,7 +68,7 @@ public class TaskController {
             userRepository.findById(task.getUserId()).ifPresent(user -> {
                 List<java.util.Map<String, Object>> newlyUnlocked = gamificationService.awardTaskCompletion(user, task);
                 userRepository.save(user);
-                response.put("user", user);
+                response.put("user", UserResponseMapper.toUserResponse(user));
                 response.put("gamification", gamificationService.buildGamificationSummary(user));
                 response.put("newlyUnlocked", newlyUnlocked);
             });
