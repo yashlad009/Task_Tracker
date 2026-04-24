@@ -5,6 +5,7 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
@@ -48,12 +49,12 @@ public class User {
     @Column(name = "tokens", nullable = false)
     private int tokens = 0;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_unlocked_rewards", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "reward_key")
     private List<String> unlockedRewards = new ArrayList<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_reward_unlock_dates", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "reward_key")
     @Column(name = "unlocked_date")

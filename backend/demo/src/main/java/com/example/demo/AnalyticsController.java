@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class AnalyticsController {
      * Uses String identifiers across the API contract.
      */
     @GetMapping("/user/{userId}")
+    @Transactional(readOnly = true)
     public Map<String, Object> getUserStats(@PathVariable String userId) {
 
         // 1. Fetch counts from TaskRepository
