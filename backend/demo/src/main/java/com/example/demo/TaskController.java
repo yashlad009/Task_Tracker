@@ -2,6 +2,7 @@ package com.example.demo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,6 +44,7 @@ public class TaskController {
     }
 
     @PutMapping("/{id}/complete")
+    @Transactional
     public ResponseEntity<?> completeTask(@PathVariable String id) {
         return taskRepository.findById(id).map(task -> {
             LinkedHashMap<String, Object> response = new LinkedHashMap<>();
